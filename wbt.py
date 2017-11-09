@@ -8,7 +8,8 @@ class Node(Object):
 		self.right = right
 
 	def insert_key(self, key, to_check=None):
-		to_check.append(self)
+		if self.size > 1:
+			to_check.append(self)
 		self.size += 1
 		if key >= self.key:
 			if self.right is None:
@@ -32,14 +33,25 @@ class Node(Object):
 			to_return.extend(self.right.enumerate)
 		return to_return
 
-	@classmethod
+	@staticmethod
 	def check_balance(to_check):
 		# checks whether any of the nodes in to_check are unbalanced, and rebalances the entire subtree if so
+		for node in to_check:
+			if node.left.size < alpha*node.size or node.right.size < alpha*node.size:
+				node = create_tree(node.enumerate())
+				break
 
-
-	# rebalance this tree by creating a perfectly balanced tree for this subtree,
-	# including new node key
-	def rebalance(self, key):
+	@staticmethod
+	def create_tree(keys):
+		if len(keys) == 1:
+			return Node(keys[0], None, None)
+		elif len(keys) == 2:
+			left = Node(keys[0], None, None)
+			return Node(keys[1], left, None)
+		else:
+			left = Node.create_tree(keys[0:len(keys)/2])
+			right = Node.create_tree(keys[len(keys)/2 + 1:])
+			return Node(keys[len(keys)/2], left, right)
 
 	def __str__(self):
 		return str(self.size)
