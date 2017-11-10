@@ -1,5 +1,8 @@
+alpha = 0.1
+
 class Node(object):
     def __init__(self, key, left, right):
+        # self.alpha = alpha
         self.key = key
         self.size = 1
         self.size += left.size if left is not None else 0
@@ -7,39 +10,77 @@ class Node(object):
         self.left = left
         self.right = right
 
-    def insert_key(self, key, to_check=None):
+    def insert_key(self, key):
         if self.size > 1:
-            to_check.append(self)
+            # print("branch 1")
+            left = self.left.size if self.left is not None else 0
+            right = self.right.size if self.right is not None else 0
+            if key >= self.key:
+                right += 1
+            else:
+                left += 1
+            # print("left: %s, right: %s" % (left, right))
+            if left < alpha*self.size or right < alpha*self.size:
+                print("rebalancing")
+                # print("enumerated: %s" % (', '.join(self.enumerate(key))))
+                n = Node.create_tree(self.enumerate(key))
+                self.key = n.key
+                self.left = n.left
+                self.right = n.right
+                self.size = n.size
+                return
+
         self.size += 1
+        # print("inserting %s" % key)
         if key >= self.key:
             if self.right is None:
                 self.right = Node(key, None, None)
-                Node.check_balance(to_check)
             else:
-                self.right.insert_key(key, to_check)
+                self.right.insert_key(key)
         else:
+            # print("41")
             if self.left is None:
+                # print("43")
                 self.left = Node(key, None, None)
-                Node.check_balance(to_check)
             else:
-                self.left.insert_key(key, to_check)
+                # print("46")
+                self.left.insert_key(key)
 
-    def enumerate(self):
+    def enumerate(self, newKey=None):
         to_return = []
         if self.left is not None:
-            to_return = self.left.enumerate
+            if newKey is not None and newKey < self.key:
+                to_return = self.left.enumerate(newKey)
+            else:
+                to_return = self.left.enumerate(None)
+        elif newKey is not None and newKey < self.key:
+            to_return = [newKey]
         to_return.append(self.key)
         if self.right is not None:
-            to_return.extend(self.right.enumerate)
+            if newKey is not None and newKey >= self.key:
+                to_return.extend(self.right.enumerate(newKey))
+            else:
+                to_return.extend(self.right.enumerate(None))
+        elif newKey is not None and newKey >= self.key:
+            to_return.append(newKey)
         return to_return
 
-    @staticmethod
-    def check_balance(to_check):
-        # checks whether any of the nodes in to_check are unbalanced, and rebalances the entire subtree if so
-        for node in to_check:
-            if node.left.size < alpha*node.size or node.right.size < alpha*node.size:
-                node = create_tree(node.enumerate())
-                break
+    # @staticmethod
+    # def check_balance(to_check):
+    #     # checks whether any of the nodes in to_check are unbalanced, and rebalances the entire subtree if so
+    #     # for node in to_check:
+    #     #     print node
+    #     for i in range(len(to_check)):
+    #         node = to_check[i]
+    #         left = node.left.size if node.left is not None else 0
+    #         right = node.right.size if node.right is not None else 0
+    #         if left < alpha*node.size or right < alpha*node.size:
+    #             print("rebalancing")
+    #             print("input: %s", (node.enumerate(),))
+    #             to_check[i] = Node.create_tree(node.enumerate())
+    #             print("output:")
+    #             print(node)
+    #             break
 
     @staticmethod
     def create_tree(keys):
@@ -60,12 +101,12 @@ class Node(object):
         ret = "  "*level + str(self.key) + "\n"
         if self.left is None and self.right is None:
             return ret
-        if self.left is not None:
-            ret += self.left.tostr(level + 1)
-        else:
-            ret += "  "*(level+1) + "None\n"
         if self.right is not None:
             ret += self.right.tostr(level + 1)
+        else:
+            ret += "  "*(level+1) + "None\n"
+        if self.left is not None:
+            ret += self.left.tostr(level + 1)
         else:
             ret += "  "*(level+1) + "None\n"
         return ret
@@ -74,3 +115,20 @@ class Node(object):
 t = Node.create_tree([1, 5, 10, 11, 12, 13])
 
 print(t)
+
+t.insert_key(2)
+print(t)
+t.insert_key(2)
+print(t)
+t.insert_key(2)
+print(t)
+t.insert_key(2)
+print(t)
+t.insert_key(2)
+print(t)
+t.insert_key(2)
+print(t)
+t.insert_key(2)
+print(t)
+
+# print(t)
