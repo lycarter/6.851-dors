@@ -12,17 +12,15 @@ class Node(object):
 
     def insert_key(self, key):
         if self.size > 1:
-            # print("branch 1")
+            # check balance
             left = self.left.size if self.left is not None else 0
             right = self.right.size if self.right is not None else 0
             if key >= self.key:
                 right += 1
             else:
                 left += 1
-            # print("left: %s, right: %s" % (left, right))
             if left < alpha*self.size or right < alpha*self.size:
-                print("rebalancing")
-                # print("enumerated: %s" % (', '.join(self.enumerate(key))))
+                # need to rebalance
                 n = Node.create_tree(self.enumerate(key))
                 self.key = n.key
                 self.left = n.left
@@ -30,21 +28,57 @@ class Node(object):
                 self.size = n.size
                 return
 
+        # actually insert the key
         self.size += 1
-        # print("inserting %s" % key)
         if key >= self.key:
             if self.right is None:
                 self.right = Node(key, None, None)
             else:
                 self.right.insert_key(key)
         else:
-            # print("41")
             if self.left is None:
-                # print("43")
                 self.left = Node(key, None, None)
             else:
-                # print("46")
                 self.left.insert_key(key)
+
+    def remove_key(self, key):
+        if self.size >= 2:
+            # check balance
+            left = self.left.size if self.left is not None else 0
+            right = self.right.size if self.right is not None else 0
+            if key >= self.key:
+                right -= 1
+            else:
+                left -= 1
+            if left < alpha*self.size or right < alpha*self.size:
+                # need to rebalance
+                n = Node.create_tree(self.remove_enumerate(key))
+                self.key = n.key
+                self.left = n.left
+                self.right = n.right
+                self.size = n.size
+                return
+
+        # actually remove the key
+        self.size -= 1
+        if key == self.key:
+            n = Node.create_tree(self.remove_enumerate(key))
+            self.key = n.key
+            self.left = n.left
+            self.right = n.right
+            self.size = n.size
+        elif key > self.key:
+            if self.right is None:
+                print("key does not exist")
+                # throw an error
+            else:
+                self.right.remove_key(key)
+        else:
+            if self.left is None:
+                print("key does not exist")
+                # throw an error
+            else:
+                self.left.remove_key(key)
 
     def enumerate(self, newKey=None):
         to_return = []
@@ -65,22 +99,21 @@ class Node(object):
             to_return.append(newKey)
         return to_return
 
-    # @staticmethod
-    # def check_balance(to_check):
-    #     # checks whether any of the nodes in to_check are unbalanced, and rebalances the entire subtree if so
-    #     # for node in to_check:
-    #     #     print node
-    #     for i in range(len(to_check)):
-    #         node = to_check[i]
-    #         left = node.left.size if node.left is not None else 0
-    #         right = node.right.size if node.right is not None else 0
-    #         if left < alpha*node.size or right < alpha*node.size:
-    #             print("rebalancing")
-    #             print("input: %s", (node.enumerate(),))
-    #             to_check[i] = Node.create_tree(node.enumerate())
-    #             print("output:")
-    #             print(node)
-    #             break
+    def remove_enumerate(self, delKey=None):
+        to_return = []
+        if self.left is not None:
+            if delKey is not None and delKey < self.key:
+                to_return = self.left.remove_enumerate(delKey)
+            else:
+                to_return = self.left.remove_enumerate(None)
+        if self.key != delKey:
+            to_return.append(self.key)
+        if self.right is not None:
+            if delKey is not None and delKey > self.key:
+                to_return.extend(self.right.remove_enumerate(delKey))
+            else:
+                to_return.extend(self.right.remove_enumerate(None))
+        return to_return
 
     @staticmethod
     def create_tree(keys):
@@ -130,5 +163,37 @@ t.insert_key(2)
 print(t)
 t.insert_key(2)
 print(t)
+
+print("\n\n\n\n\n\n")
+
+t.remove_key(2)
+print(t)
+t.remove_key(10)
+print(t)
+t.remove_key(2)
+print(t)
+t.remove_key(2)
+print(t)
+t.remove_key(2)
+print(t)
+t.remove_key(2)
+print(t)
+t.remove_key(2)
+print(t)
+t.remove_key(2)
+print(t)
+t.remove_key(2)
+print(t)
+# this one fails
+t.remove_key(2)
+print(t)
+
+print("\n\n\n\n\n")
+t.remove_key(11)
+print(t)
+print("__________")
+t.remove_key(1)
+print(t)
+
 
 # print(t)
