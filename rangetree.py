@@ -12,7 +12,7 @@ class RangeTree(object):
 	def buildFractions(self, node=None):
 		if node is None:
 			root = self._root()
-			self.fractions[root.index()] = Fraction(copy.deepcopy(self.points))
+			self.fractions[root.index()] = RangeTree.Fraction(copy.deepcopy(self.points))
 			self.buildFractions(root)
 		else:
 			# invariant: node already has its fraction filled
@@ -20,7 +20,7 @@ class RangeTree(object):
 			fro = node.fro
 			to = node.to
 			if node.lc() is not None:
-				self.fractions[node.index()] = Fraction(copy.deepcopy(self.points[node.fro:node.to]))
+				self.fractions[node.index()] = RangeTree.Fraction(copy.deepcopy(self.points[node.fro:node.to]))
 				RangeTree._linkFraction(self.fractions[index], self.fractions[index].left, self.fractions[node.index()])
 				self.buildFractions(node)
 			else:
@@ -28,7 +28,7 @@ class RangeTree(object):
 				self.fractions[index].left = [-1 for i in range(len(self.fractions[index].left))]
 			node.become(fro, to)
 			if node.rc() is not None:
-				self.fractions[node.index()] = Fraction(copy.deepcopy(self.points[node.fro:node.to]))
+				self.fractions[node.index()] = RangeTree.Fraction(copy.deepcopy(self.points[node.fro:node.to]))
 				RangeTree._linkFraction(self.fractions[index], self.fractions[index].right, self.fractions[node.index()])
 				self.buildFractions(node)
 			else:
@@ -55,23 +55,22 @@ class RangeTree(object):
 		if fro == to:
 			return None
 		else:
-			return Node(fro, to)
+			return RangeTree.Node(fro, to)
 
-	@staticmethod
-	def _splitNode(node, start, end):
+	def _splitNode(self, node, start, end):
 		if node is None:
 			return node
-		point = node.get()
+		point = self.get(node)
 		if point.x >= end:
-			return _splitNode(node.lc(), start, end)
+			return self._splitNode(node.lc(), start, end)
 		elif point.x < start:
-			return _splitNode(node.rc(), start, end)
+			return self._splitNode(node.rc(), start, end)
 		else:
 			return node
 
 	@staticmethod
 	def _splitPoint(self, start, end):
-		node = _splitNode(start, end)
+		node = self._splitNode(start, end)
 		return node.get() if node is not None else None
 
 	def _getAll(self, out, node, ymin_ix, ysup):
@@ -115,7 +114,7 @@ class RangeTree(object):
 			self._getLargerEqual(out, node.rc(), frac.right[ymin_ix], ymin, ysup)
 
 	def pointsInRange(self, xmin, xsup, ymin, ysup, out=[]):
-		node = RangeTree._splitNode(self._root(), xmin, xsup)
+		node = self._splitNode(self._root(), xmin, xsup)
 		if node is None:
 			return
 		frac = self.fractions[node.index()]
@@ -150,50 +149,51 @@ class RangeTree(object):
 			result.append(points[node.index()] if node is not None else None)
 		return result
 
-class Fraction(object):
-	def __init__(self, points):
-		self.points = points
-		self.points.sort(key=lambda i: i.y)
-		self.right = [None]*len(points)
-		self.left = [None]*len(points)
+	class Fraction(object):
+		def __init__(self, points):
+			self.points = points
+			self.points.sort(key=lambda i: i.y)
+			self.right = [None]*len(points)
+			self.left = [None]*len(points)
 
-class Node(object):
-	def __init__(self, fro=None, to=None):
-		self.fro = fro
-		self.to = to
-
-	def fromNode(self, node):
-		self.fro = node.fro
-		self.to = node.to
-
-	def rc(self):
-		if self.to - self.fro == 1:
-			return None
-		else:
-			return self.become(self.index() + 1, self.to)
-
-	def lc(self):
-		if self.to - self.fro == 1:
-			return None
-		else:
-			return self.become(self.fro, self.index())
-
-	def index(self):
-		return self.fro + (self.to - self.fro + 1) / 2 - 1
-
-	def get(self):
-		return self.points[self.index()]
-
-	def become(self, fro, to):
-		if fro == to:
-			return None
-		else:
+	class Node(object):
+		def __init__(self, fro=None, to=None):
 			self.fro = fro
 			self.to = to
-			return self
 
-	def __str__(self):
-		return "[" + self.fro + "," + self.to + ")[" + self.index() + "]=" + self.get()
+		def fromNode(self, node):
+			self.fro = node.fro
+			self.to = node.to
+
+		def rc(self):
+			if self.to - self.fro == 1:
+				return None
+			else:
+				return self.become(self.index() + 1, self.to)
+
+		def lc(self):
+			if self.to - self.fro == 1:
+				return None
+			else:
+				return self.become(self.fro, self.index())
+
+		def index(self):
+			return self.fro + (self.to - self.fro + 1) / 2 - 1
+
+		def become(self, fro, to):
+			if fro == to:
+				return None
+			else:
+				self.fro = fro
+				self.to = to
+				return self
+
+		def __str__(self):
+			return "[" + self.fro + "," + self.to + ")[" + self.index() + "]=stuff"
+
+
+	def get(self, node):
+		return self.points[node.index()]
 
 
 class Point(object):
