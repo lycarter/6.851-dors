@@ -68,10 +68,9 @@ class RangeTree(object):
 		else:
 			return node
 
-	@staticmethod
 	def _splitPoint(self, start, end):
 		node = self._splitNode(start, end)
-		return node.get() if node is not None else None
+		return self.get(node) if node is not None else None
 
 	def _getAll(self, out, node, ymin_ix, ysup):
 		if node is None or ymin_ix == -1:
@@ -85,7 +84,7 @@ class RangeTree(object):
 		if node is None or ymin_ix == -1:
 			return
 		frac = self.fractions[node.index()]
-		point = node.get()
+		point = self.get(node)
 		if point.x < val:
 			fro = node.fro
 			to = node.to
@@ -101,7 +100,7 @@ class RangeTree(object):
 		if node is None or ymin_ix == -1:
 			return
 		frac = self.fractions[node.index()]
-		point = node.get()
+		point = self.get(node)
 		if point.x >= val:
 			fro = node.fro
 			to = node.to
@@ -116,20 +115,21 @@ class RangeTree(object):
 	def pointsInRange(self, xmin, xsup, ymin, ysup, out=[]):
 		node = self._splitNode(self._root(), xmin, xsup)
 		if node is None:
-			return
+			return []
 		frac = self.fractions[node.index()]
 		ypoints = self.fractions[node.index()].points
+		ymin_ix = binarySearch(ypoints, Point(float("-inf"), ymin), lambda p: p.y)
 		# todo:
 		#         int ymin_ix = Arrays.binarySearch(ypoints, Point.make(Double.NEGATIVE_INFINITY, ymin), compareYCoord)
 		if ymin_ix < 0:
 			ymin_ix = -1*ymin_ix - 1
 		if ymin_ix == len(ypoints):
-			return
-		point = node.get()
+			return []
+		point = self.get(node)
 		if point.y < ysup and point.y >= ymin:
 			out.append(point)
-		lc = Node().fromNode(node).lc()
-		rc = Node().fromNode(node).rc()
+		lc = RangeTree.Node(node.fro, node.to).lc()
+		rc = RangeTree.Node(node.fro, node.to).rc()
 		self._getSmaller(rc, xsup, frac.right[ymin_ix], ymin, ysup, out)
 		self._getLargerEqual(lc, xmin, frac.left[ymin_ix], ymin, ysup, out)
 		return out
@@ -162,7 +162,9 @@ class RangeTree(object):
 			self.to = to
 
 		def fromNode(self, node):
+			print "setting self.fro to " + str(node.fro)
 			self.fro = node.fro
+			print self.fro
 			self.to = node.to
 
 		def rc(self):
@@ -178,7 +180,9 @@ class RangeTree(object):
 				return self.become(self.fro, self.index())
 
 		def index(self):
-			return self.fro + (self.to - self.fro + 1) / 2 - 1
+			if self.fro is not None and self.to is not None:
+				return self.fro + (self.to - self.fro + 1) / 2 - 1
+			return 0
 
 		def become(self, fro, to):
 			if fro == to:
@@ -189,7 +193,7 @@ class RangeTree(object):
 				return self
 
 		def __str__(self):
-			return "[" + self.fro + "," + self.to + ")[" + self.index() + "]=stuff"
+			return "(%s,%s):%s" % (self.fro, self.to, self.index())
 
 
 	def get(self, node):
@@ -222,6 +226,19 @@ class Point(object):
 	def __str__(self):
 		return "(" + x + "," + y + ")"
 
+def binarySearch(l, value, comparisonTransform=lambda p: p):
+	# todo: test behavior vs http://www.geeksforgeeks.org/arrays-binarysearch-java-examples-set-1/
+	# in particular, if l doesn't contain value, ensure that this behaves the same
+    lo, hi = 0, len(l) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if comparisonTransform(l[mid]) < comparisonTransform(value):
+            lo = mid + 1
+        elif comparisonTransform(value) < comparisonTransform(l[mid]):
+            hi = mid - 1
+        else:
+            return mid
+    return None
 
 
 class Tester(object):
