@@ -72,17 +72,17 @@ class RangeTree(object):
 		node = self._splitNode(start, end)
 		return self.get(node) if node is not None else None
 
-	def _getAll(self, out, node, ymin_ix, ysup):
-		if node is None or ymin_ix == -1:
+	def _getAll(self, out, node, ymin_idx, ysup):
+		if node is None or ymin_idx == -1:
 			return
 		toAdd = self.fractions[node.index()].points
-		i = ymin_ix
+		i = ymin_idx
 		while i < len(toAdd) and toAdd[i].y < ysup:
 			out.append(toAdd[i])
 			i += 1
 
-	def _getSmaller(self, out, node, val, ymin_ix, ymin, ysup):
-		if node is None or ymin_ix == -1:
+	def _getSmaller(self, out, node, val, ymin_idx, ymin, ysup):
+		if node is None or ymin_idx == -1:
 			return
 		frac = self.fractions[node.index()]
 		point = self.get(node)
@@ -91,14 +91,14 @@ class RangeTree(object):
 			to = node.to
 			if point.y < ysup and point.y >= ymin:
 				out.append(point)
-			self._getSmaller(out, node.rc(), val, frac.right[ymin_ix], ymin, ysup)
+			self._getSmaller(out, node.rc(), val, frac.right[ymin_idx], ymin, ysup)
 			node.become(fro, to)
-			self._getAll(out, node.lc(), frac.left[ymin_ix], ysup)
+			self._getAll(out, node.lc(), frac.left[ymin_idx], ysup)
 		else:
-			self._getSmaller(out, node.lc(), val, frac.left[ymin_ix], ymin, ysup)
+			self._getSmaller(out, node.lc(), val, frac.left[ymin_idx], ymin, ysup)
 
-	def _getLargerEqual(self, out, node, val, ymin_ix, ymin, ysup):
-		if node is None or ymin_ix == -1:
+	def _getLargerEqual(self, out, node, val, ymin_idx, ymin, ysup):
+		if node is None or ymin_idx == -1:
 			return
 		frac = self.fractions[node.index()]
 		point = self.get(node)
@@ -107,34 +107,36 @@ class RangeTree(object):
 			to = node.to
 			if point.y < ysup and point.y >= ymin:
 				out.append(point)
-			self._getLargerEqual(out, node.lc(), val, frac.left[ymin_ix], ymin, ysup)
+			self._getLargerEqual(out, node.lc(), val, frac.left[ymin_idx], ymin, ysup)
 			node.become(fro, to)
-			self._getAll(out, node.rc(), frac.left[ymin_ix], ysup)
+			self._getAll(out, node.rc(), frac.left[ymin_idx], ysup)
 		else:
-			self._getLargerEqual(out, node.rc(), val, frac.right[ymin_ix], ymin, ysup)
+			self._getLargerEqual(out, node.rc(), val, frac.right[ymin_idx], ymin, ysup)
 
 	def pointsInRange(self, xmin, xsup, ymin, ysup, out=None):
+		# print("pointsinrange called")
 		if out is None:
 			out = []
 		node = self._splitNode(self._root(), xmin, xsup)
 		if node is None:
 			return []
 		frac = self.fractions[node.index()]
+		# print(frac)
 		ypoints = self.fractions[node.index()].points
-		ymin_ix = binarySearch(ypoints, Point(float("-inf"), ymin), lambda p: p.y)
-		# todo:
-		#         int ymin_ix = Arrays.binarySearch(ypoints, Point.make(Double.NEGATIVE_INFINITY, ymin), compareYCoord)
-		if ymin_ix < 0:
-			ymin_ix = -1*ymin_ix - 1
-		if ymin_ix == len(ypoints):
+		for point in ypoints:
+			print(point)
+		ymin_idx = binarySearch(ypoints, Point(float("-inf"), ymin), lambda p: p.y)
+		if ymin_idx < 0:
+			ymin_idx = -1*ymin_idx - 1
+		if ymin_idx == len(ypoints):
 			return []
 		point = self.get(node)
 		if point.y < ysup and point.y >= ymin:
 			out.append(point)
 		lc = RangeTree.Node(node.fro, node.to).lc()
 		rc = RangeTree.Node(node.fro, node.to).rc()
-		self._getSmaller(out, rc, xsup, frac.right[ymin_ix], ymin, ysup)
-		self._getLargerEqual(out, lc, xmin, frac.left[ymin_ix], ymin, ysup)
+		self._getSmaller(out, rc, xsup, frac.right[ymin_idx], ymin, ysup)
+		self._getLargerEqual(out, lc, xmin, frac.left[ymin_idx], ymin, ysup)
 		return out
 
 	def path(self, dirs):
@@ -250,6 +252,7 @@ class Point(object):
 	def __str__(self):
 		return "(%s,%s)" % (self.x, self.y)
 
+
 def binarySearch(l, value, comparisonTransform=lambda p: p):
 	# todo: test behavior vs http://www.geeksforgeeks.org/arrays-binarysearch-java-examples-set-1/
 	# in particular, if l doesn't contain value, ensure that this behaves the same
@@ -262,7 +265,7 @@ def binarySearch(l, value, comparisonTransform=lambda p: p):
             hi = mid - 1
         else:
             return mid
-    return None
+    return -1
 
 
 class Tester(object):
@@ -270,7 +273,8 @@ class Tester(object):
 		pass
 
 	def runAllTests(self):
-		self.testXOnlyPointRange()
+		# self.testXOnlyPointRange()
+		self.testPointRange()
 
 	def testXOnlyPointRange(self):
 		rt = RangeTree(Point.makeArray([1, 0, 7, 0, 19, 0, 200, 0, 3, 0, 15, 0]))
@@ -303,7 +307,11 @@ class Tester(object):
 		print(rt)
 
 	def testPointRange(self):
-		pass
+		rt = RangeTree(Point.makeArray([0,0, 5,5, 0,5, 5,0, 2,2, 3,3]))
+		points = rt.pointsInRange(0,6,3,6)
+		print("result")
+		for point in points:
+			print point
 
 
 
