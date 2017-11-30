@@ -3,3 +3,6 @@ class point(object):
 		self.key = key
 		self.left = left
 		self.right = right
+
+class cascaded_array(object):
+	def __init__(self, keys)

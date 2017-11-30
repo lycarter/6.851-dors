@@ -285,12 +285,14 @@ class Tester(object):
 			print point
 		# print(Point.makeArray([7, 0, 19, 0, 15, 0]))
 		sorted_gotten = sorted(rt.pointsInRange(6, 20, 0, 1000000))
-		sorted_expected = Point.makeArray([7, 0, 19, 0, 15, 0])
+		sorted_expected = sorted(Point.makeArray([7, 0, 19, 0, 15, 0]))
 
 		print(len(sorted_gotten))
 		print(len(sorted_expected))
 		assert(len(sorted_gotten) == len(sorted_expected))
 		for i in range(len(sorted_gotten)):
+			print(sorted_gotten[i])
+			print(sorted_expected[i])
 			assert(sorted_gotten[i] == sorted_expected[i])
 		# assert(set(rt.pointsInRange(6, 20, 0, 10000000)) == set(Point.makeArray([7, 0, 19, 0, 15, 0])))
 		# assert(set(rt.pointsInRange(1, 10, 0, 10000000)) == set(Point.makeArray([7, 0, 1, 0, 3, 0])))
