@@ -79,6 +79,7 @@ class RangeTree(object):
 		i = ymin_ix
 		while i < len(toAdd) and toAdd[i].y < ysup:
 			out.append(toAdd[i])
+			i += 1
 
 	def _getSmaller(self, out, node, val, ymin_ix, ymin, ysup):
 		if node is None or ymin_ix == -1:
@@ -94,7 +95,7 @@ class RangeTree(object):
 			node.become(fro, to)
 			self._getAll(out, node.lc(), frac.left[ymin_ix], ysup)
 		else:
-			self.getSmaller(out, node.lc(), frac.left[ymin_ix], ymin, ysup)
+			self._getSmaller(out, node.lc(), val, frac.left[ymin_ix], ymin, ysup)
 
 	def _getLargerEqual(self, out, node, val, ymin_ix, ymin, ysup):
 		if node is None or ymin_ix == -1:
@@ -110,9 +111,11 @@ class RangeTree(object):
 			node.become(fro, to)
 			self._getAll(out, node.rc(), frac.left[ymin_ix], ysup)
 		else:
-			self._getLargerEqual(out, node.rc(), frac.right[ymin_ix], ymin, ysup)
+			self._getLargerEqual(out, node.rc(), val, frac.right[ymin_ix], ymin, ysup)
 
-	def pointsInRange(self, xmin, xsup, ymin, ysup, out=[]):
+	def pointsInRange(self, xmin, xsup, ymin, ysup, out=None):
+		if out is None:
+			out = []
 		node = self._splitNode(self._root(), xmin, xsup)
 		if node is None:
 			return []
@@ -130,8 +133,8 @@ class RangeTree(object):
 			out.append(point)
 		lc = RangeTree.Node(node.fro, node.to).lc()
 		rc = RangeTree.Node(node.fro, node.to).rc()
-		self._getSmaller(rc, xsup, frac.right[ymin_ix], ymin, ysup, out)
-		self._getLargerEqual(lc, xmin, frac.left[ymin_ix], ymin, ysup, out)
+		self._getSmaller(out, rc, xsup, frac.right[ymin_ix], ymin, ysup)
+		self._getLargerEqual(out, lc, xmin, frac.left[ymin_ix], ymin, ysup)
 		return out
 
 	def path(self, dirs):
@@ -223,8 +226,29 @@ class Point(object):
 	def __ne__(self, other):
 		return not self == other
 
+	def __lt__(self, other):
+		if self.x != other.x:
+			return self.x < other.x
+		else:
+			return self.y < other.y
+
+	def __le__(self, other):
+		if self == other or self < other:
+			return True
+		return False
+
+	def __gt__(self, other):
+		return not self <= other
+
+	def __ge__(self, other):
+		return self == other or self > other
+
+	def __hash__(self):
+		# print("hey")
+		return hash(self.__str__())
+
 	def __str__(self):
-		return "(" + x + "," + y + ")"
+		return "(%s,%s)" % (self.x, self.y)
 
 def binarySearch(l, value, comparisonTransform=lambda p: p):
 	# todo: test behavior vs http://www.geeksforgeeks.org/arrays-binarysearch-java-examples-set-1/
@@ -250,8 +274,26 @@ class Tester(object):
 
 	def testXOnlyPointRange(self):
 		rt = RangeTree(Point.makeArray([1, 0, 7, 0, 19, 0, 200, 0, 3, 0, 15, 0]))
-		assert(set(rt.pointsInRange(6, 20, 0, 10000000)) == set(Point.makeArray([7, 0, 19, 0, 15, 0])))
-		assert(set(rt.pointsInRange(1, 10, 0, 10000000)) == set(Point.makeArray([7, 0, 1, 0, 3, 0])))
+		# print(rt)
+		print("got this")
+		points = rt.pointsInRange(6, 20, 0, 1000000)
+		for point in rt.pointsInRange(6, 20, 0, 1000000):
+			print point
+		# [print point for point in rt.pointsInRange(6, 20, 0, 1000000)]
+		print("expecting this")
+		for point in Point.makeArray([7, 0, 19, 0, 15, 0]):
+			print point
+		# print(Point.makeArray([7, 0, 19, 0, 15, 0]))
+		sorted_gotten = sorted(rt.pointsInRange(6, 20, 0, 1000000))
+		sorted_expected = Point.makeArray([7, 0, 19, 0, 15, 0])
+
+		print(len(sorted_gotten))
+		print(len(sorted_expected))
+		assert(len(sorted_gotten) == len(sorted_expected))
+		for i in range(len(sorted_gotten)):
+			assert(sorted_gotten[i] == sorted_expected[i])
+		# assert(set(rt.pointsInRange(6, 20, 0, 10000000)) == set(Point.makeArray([7, 0, 19, 0, 15, 0])))
+		# assert(set(rt.pointsInRange(1, 10, 0, 10000000)) == set(Point.makeArray([7, 0, 1, 0, 3, 0])))
 		rt = RangeTree(Point.makeArray([
 			2, 19, 7, 10, 5, 80, 8, 37, 12, 3, 17, 62, 15, 99, 12, 49, 41, 95, 58, 59, 93, 70, 33,
 			30, 52, 23, 67, 89]))
