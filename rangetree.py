@@ -119,13 +119,14 @@ class RangeTree(object):
 			out = []
 		node = self._splitNode(self._root(), xmin, xsup)
 		if node is None:
-			return []
+			return out
 		frac = self.fractions[node.index()]
-		# print(frac)
-		ypoints = self.fractions[node.index()].points
+		# print(frac.points)
+		ypoints = frac.points
 		for point in ypoints:
 			print(point)
 		ymin_idx = binarySearch(ypoints, Point(float("-inf"), ymin), lambda p: p.y)
+		print "ymin index: %s" % ymin_idx
 		if ymin_idx < 0:
 			ymin_idx = -1*ymin_idx - 1
 		if ymin_idx == len(ypoints):
@@ -254,18 +255,23 @@ class Point(object):
 
 
 def binarySearch(l, value, comparisonTransform=lambda p: p):
-	# todo: test behavior vs http://www.geeksforgeeks.org/arrays-binarysearch-java-examples-set-1/
-	# in particular, if l doesn't contain value, ensure that this behaves the same
-    lo, hi = 0, len(l) - 1
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if comparisonTransform(l[mid]) < comparisonTransform(value):
-            lo = mid + 1
-        elif comparisonTransform(value) < comparisonTransform(l[mid]):
-            hi = mid - 1
-        else:
-            return mid
-    return -1
+	def _binLowerBound(l, value, lo, hi, ct=lambda p: p):
+		if lo > hi:
+			return lo
+
+		mid = lo + (hi - lo) / 2
+		if (ct(l[mid]) == ct(value)):
+			return _binLowerBound(l, value, lo, mid-1, ct)
+		elif (ct(l[mid]) > ct(value)):
+			return _binLowerBound(l, value, lo, mid-1, ct)
+		else:
+			return _binLowerBound(l, value, mid+1, hi, ct)
+
+	lo = 0
+	hi = len(l) - 1
+	return _binLowerBound(l, value, lo, hi, comparisonTransform)
+
+
 
 
 class Tester(object):
@@ -308,8 +314,8 @@ class Tester(object):
 
 	def testPointRange(self):
 		rt = RangeTree(Point.makeArray([0,0, 5,5, 0,5, 5,0, 2,2, 3,3]))
-		points = rt.pointsInRange(0,6,3,6)
-		print("result")
+		points = rt.pointsInRange(-1,6,-1,6)
+		print("\nresult")
 		for point in points:
 			print point
 
