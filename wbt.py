@@ -144,56 +144,47 @@ class Node(object):
             ret += "  "*(level+1) + "None\n"
         return ret
 
-# testing
-t = Node.create_tree([1, 5, 10, 11, 12, 13])
+class Tester(object):
+    def __init__(self):
+        pass
 
-print(t)
+    def runAllTests(self):
+        print("running tests")
+        self.testCreateTree()
+        self.testInsert()
+        self.testRemove()
+        print("all tests succeeded")
 
-t.insert_key(2)
-print(t)
-t.insert_key(2)
-print(t)
-t.insert_key(2)
-print(t)
-t.insert_key(2)
-print(t)
-t.insert_key(2)
-print(t)
-t.insert_key(2)
-print(t)
-t.insert_key(2)
-print(t)
+    @staticmethod
+    def sameSortedList(expected, returned):
+        assert(len(expected) == len(returned))
+        for i in range(len(expected)):
+            assert(expected[i] == returned[i])
+        return True
 
-print("\n\n\n\n\n\n")
+    def testCreateTree(self):
+        vals = [1, 5, 10, 11, 12, 13]
+        t = Node.create_tree([1, 5, 10, 11, 12, 13])
+        assert(Tester.sameSortedList(vals, t.enumerate()))
 
-t.remove_key(2)
-print(t)
-t.remove_key(10)
-print(t)
-t.remove_key(2)
-print(t)
-t.remove_key(2)
-print(t)
-t.remove_key(2)
-print(t)
-t.remove_key(2)
-print(t)
-t.remove_key(2)
-print(t)
-t.remove_key(2)
-print(t)
-t.remove_key(2)
-print(t)
-# this one fails
-t.remove_key(2)
-print(t)
+    def testInsert(self):
+        vals = [1, 5, 10, 11, 12, 13]
+        t = Node.create_tree([1, 5, 10, 11, 12, 13])
+        t.insert_key(2)
+        t.insert_key(50)
+        assert(Tester.sameSortedList([1, 2, 5, 10, 11, 12, 13, 50], t.enumerate()))
 
-print("\n\n\n\n\n")
-t.remove_key(11)
-print(t)
-print("__________")
-t.remove_key(1)
-print(t)
+    def testRemove(self):
+        vals = [1, 5, 10, 11, 12, 13]
+        t = Node.create_tree([1, 5, 10, 11, 12, 13])
+        t.insert_key(2)
+        t.insert_key(50)
+        assert(Tester.sameSortedList([1, 2, 5, 10, 11, 12, 13, 50], t.enumerate()))
+        t.remove_key(1)
+        t.remove_key(10)
+        t.remove_key(50)
+        assert(Tester.sameSortedList([2, 5, 11, 12, 13], t.enumerate()))
 
+t = Tester()
+t.runAllTests()
 
-# print(t)
