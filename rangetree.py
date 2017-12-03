@@ -73,18 +73,26 @@ class RangeTree(object):
 		return self.get(node) if node is not None else None
 
 	def _getAll(self, out, node, ymin_idx, ysup):
+		print("getting all")
+		print(node)
+		print(ymin_idx)
+		print(ysup)
 		if node is None or ymin_idx == -1:
 			return
 		toAdd = self.fractions[node.index()].points
+		print(toAdd)
 		i = ymin_idx
 		while i < len(toAdd) and toAdd[i].y < ysup:
 			out.append(toAdd[i])
 			i += 1
 
 	def _getSmaller(self, out, node, val, ymin_idx, ymin, ysup):
+		print("in get smaller")
 		if node is None or ymin_idx == -1:
 			return
 		frac = self.fractions[node.index()]
+		for point in frac.points:
+			print(point)
 		point = self.get(node)
 		if point.x < val:
 			fro = node.fro
@@ -98,18 +106,28 @@ class RangeTree(object):
 			self._getSmaller(out, node.lc(), val, frac.left[ymin_idx], ymin, ysup)
 
 	def _getLargerEqual(self, out, node, val, ymin_idx, ymin, ysup):
+		print("in get larger")
 		if node is None or ymin_idx == -1:
 			return
 		frac = self.fractions[node.index()]
+		for point in frac.points:
+			print(point)
 		point = self.get(node)
+		print("point is %s" % point)
 		if point.x >= val:
+			print("point is larger than val")
 			fro = node.fro
 			to = node.to
 			if point.y < ysup and point.y >= ymin:
 				out.append(point)
+			print("123 node is %s" % node)
 			self._getLargerEqual(out, node.lc(), val, frac.left[ymin_idx], ymin, ysup)
+			print("125 node is %s" % node)
+
 			node.become(fro, to)
-			self._getAll(out, node.rc(), frac.left[ymin_idx], ysup)
+			print("128 node is %s" % node)
+
+			self._getAll(out, node.rc(), frac.right[ymin_idx], ysup)
 		else:
 			self._getLargerEqual(out, node.rc(), val, frac.right[ymin_idx], ymin, ysup)
 
@@ -120,6 +138,7 @@ class RangeTree(object):
 		node = self._splitNode(self._root(), xmin, xsup)
 		if node is None:
 			return out
+
 		frac = self.fractions[node.index()]
 		# print(frac.points)
 		ypoints = frac.points
@@ -127,17 +146,22 @@ class RangeTree(object):
 			print(point)
 		ymin_idx = binarySearch(ypoints, Point(float("-inf"), ymin), lambda p: p.y)
 		print "ymin index: %s" % ymin_idx
-		if ymin_idx < 0:
-			ymin_idx = -1*ymin_idx - 1
 		if ymin_idx == len(ypoints):
 			return []
+
 		point = self.get(node)
+		print(point)
 		if point.y < ysup and point.y >= ymin:
 			out.append(point)
+		print out
+
+
 		lc = RangeTree.Node(node.fro, node.to).lc()
 		rc = RangeTree.Node(node.fro, node.to).rc()
 		self._getSmaller(out, rc, xsup, frac.right[ymin_idx], ymin, ysup)
+		print(out)
 		self._getLargerEqual(out, lc, xmin, frac.left[ymin_idx], ymin, ysup)
+		print(out)
 		return out
 
 	def path(self, dirs):
@@ -314,7 +338,7 @@ class Tester(object):
 
 	def testPointRange(self):
 		rt = RangeTree(Point.makeArray([0,0, 5,5, 0,5, 5,0, 2,2, 3,3]))
-		points = rt.pointsInRange(-1,6,-1,6)
+		points = rt.pointsInRange(-1,6,3,6)
 		print("\nresult")
 		for point in points:
 			print point
