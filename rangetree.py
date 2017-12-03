@@ -303,45 +303,35 @@ class Tester(object):
 		pass
 
 	def runAllTests(self):
-		# self.testXOnlyPointRange()
+		print("running tests")
+		self.testXOnlyPointRange()
 		self.testPointRange()
+		self.makeLargeRangeTree()
+		print("all tests passed")
+
+	@staticmethod
+	def samePoints(expected, gotten):
+		sorted_expected = sorted(expected)
+		sorted_gotten = sorted(gotten)
+		assert(len(sorted_expected) == len(sorted_gotten))
+		for i in range(len(sorted_expected)):
+			assert(sorted_gotten[i] == sorted_expected[i])
+		return True
 
 	def testXOnlyPointRange(self):
 		rt = RangeTree(Point.makeArray([1, 0, 7, 0, 19, 0, 200, 0, 3, 0, 15, 0]))
-		# print(rt)
-		print("got this")
 		points = rt.pointsInRange(6, 20, 0, 1000000)
-		for point in rt.pointsInRange(6, 20, 0, 1000000):
-			print point
-		# [print point for point in rt.pointsInRange(6, 20, 0, 1000000)]
-		print("expecting this")
-		for point in Point.makeArray([7, 0, 19, 0, 15, 0]):
-			print point
-		# print(Point.makeArray([7, 0, 19, 0, 15, 0]))
-		sorted_gotten = sorted(rt.pointsInRange(6, 20, 0, 1000000))
-		sorted_expected = sorted(Point.makeArray([7, 0, 19, 0, 15, 0]))
-
-		print(len(sorted_gotten))
-		print(len(sorted_expected))
-		assert(len(sorted_gotten) == len(sorted_expected))
-		for i in range(len(sorted_gotten)):
-			print(sorted_gotten[i])
-			print(sorted_expected[i])
-			assert(sorted_gotten[i] == sorted_expected[i])
-		# assert(set(rt.pointsInRange(6, 20, 0, 10000000)) == set(Point.makeArray([7, 0, 19, 0, 15, 0])))
-		# assert(set(rt.pointsInRange(1, 10, 0, 10000000)) == set(Point.makeArray([7, 0, 1, 0, 3, 0])))
-		rt = RangeTree(Point.makeArray([
-			2, 19, 7, 10, 5, 80, 8, 37, 12, 3, 17, 62, 15, 99, 12, 49, 41, 95, 58, 59, 93, 70, 33,
-			30, 52, 23, 67, 89]))
-		print("yay success")
-		print(rt)
+		assert(Tester.samePoints(Point.makeArray([7,0, 19,0, 15,0]), points))
 
 	def testPointRange(self):
 		rt = RangeTree(Point.makeArray([0,0, 5,5, 0,5, 5,0, 2,2, 3,3]))
 		points = rt.pointsInRange(-1,6,3,6)
-		print("\nresult")
-		for point in points:
-			print point
+		assert(Tester.samePoints(Point.makeArray([5,5, 3,3, 0,5]), points))
+
+	def makeLargeRangeTree(self):
+			rt = RangeTree(Point.makeArray([
+			2, 19, 7, 10, 5, 80, 8, 37, 12, 3, 17, 62, 15, 99, 12, 49, 41, 95, 58, 59, 93, 70, 33,
+			30, 52, 23, 67, 89]))
 
 
 
