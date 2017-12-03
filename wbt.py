@@ -80,6 +80,56 @@ class Node(object):
             else:
                 self.left.remove_key(key)
 
+    def rangeQuery(self, xmin, xsup):
+        if self.key > xsup: # TODO(lcarter): check equals?
+            if self.left is not None:
+                return self.left.rangeQuery(xmin, xsup)
+            else:
+                return []
+        elif self.key < xmin:
+            if self.right is not None:
+                return self.right.rangeQuery(xmin, xsup)
+            else:
+                return []
+        else:
+            toReturn = []
+            if self.left is not None:
+                self.left.searchLeft(xmin, toReturn)
+            toReturn.append(self.key)
+            if self.right is not None:
+                self.right.searchRight(xsup, toReturn)
+            return toReturn
+
+    def searchLeft(self, xmin, toReturn):
+        if self.left is None and self.right is None:
+            if self.key >= xmin:
+                toReturn.append(self.key)
+        else:
+            if self.key >= xmin:
+                if self.left is not None:
+                    self.left.searchLeft(xmin, toReturn)
+                toReturn.append(self.key)
+                if self.right is not None:
+                    toReturn.extend(self.right.enumerate())
+            else:
+                self.right.searchLeft(xmin, toReturn)
+
+
+    def searchRight(self, xmax, toReturn):
+        if self.left is None and self.right is None:
+            if self.key <= xmax:
+                toReturn.append(self.key)
+        else:
+            if self.key <= xmax:
+                if self.left is not None:
+                    toReturn.extend(self.left.enumerate())
+                toReturn.append(self.key)
+                if self.right is not None:
+                    self.right.searchRight(xmax, toReturn)
+            else:
+                self.left.searchRight(xmax, toReturn)
+
+
     def enumerate(self, newKey=None):
         to_return = []
         if self.left is not None:
@@ -153,6 +203,7 @@ class Tester(object):
         self.testCreateTree()
         self.testInsert()
         self.testRemove()
+        self.testRangeQuery()
         print("all tests succeeded")
 
     @staticmethod
@@ -184,6 +235,15 @@ class Tester(object):
         t.remove_key(10)
         t.remove_key(50)
         assert(Tester.sameSortedList([2, 5, 11, 12, 13], t.enumerate()))
+
+    def testRangeQuery(self):
+        vals = [1, 5, 10, 11, 12, 13]
+        t = Node.create_tree([1, 5, 10, 11, 12, 13])
+        assert(Tester.sameSortedList([5, 10, 11], t.rangeQuery(5, 11)))
+        assert(Tester.sameSortedList([], t.rangeQuery(6, 8)))
+        assert(Tester.sameSortedList([1, 5, 10, 11, 12, 13], t.rangeQuery(0, 20)))
+
+
 
 t = Tester()
 t.runAllTests()
