@@ -81,7 +81,7 @@ class Node(object):
                 self.left.remove_key(key)
 
     def rangeQuery(self, xmin, xsup):
-        if self.key > xsup: # TODO(lcarter): check equals?
+        if self.key > xsup:
             if self.left is not None:
                 return self.left.rangeQuery(xmin, xsup)
             else:
