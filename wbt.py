@@ -10,7 +10,7 @@ class Node(object):
         self.left = left
         self.right = right
 
-    def insert_key(self, key):
+    def insert_point(self, key):
         if self.size > 1:
             # check balance
             left = self.left.size if self.left is not None else 0
@@ -34,14 +34,14 @@ class Node(object):
             if self.right is None:
                 self.right = Node(key, None, None)
             else:
-                self.right.insert_key(key)
+                self.right.insert_point(key)
         else:
             if self.left is None:
                 self.left = Node(key, None, None)
             else:
-                self.left.insert_key(key)
+                self.left.insert_point(key)
 
-    def remove_key(self, key):
+    def remove_point(self, key):
         if self.size >= 2:
             # check balance
             left = self.left.size if self.left is not None else 0
@@ -72,13 +72,13 @@ class Node(object):
                 print("key does not exist")
                 # throw an error
             else:
-                self.right.remove_key(key)
+                self.right.remove_point(key)
         else:
             if self.left is None:
                 print("key does not exist")
                 # throw an error
             else:
-                self.left.remove_key(key)
+                self.left.remove_point(key)
 
     def rangeQuery(self, xmin, xsup):
         if self.key > xsup:
@@ -166,16 +166,16 @@ class Node(object):
         return to_return
 
     @staticmethod
-    def create_tree(keys):
-        if len(keys) == 1:
-            return Node(keys[0], None, None)
-        elif len(keys) == 2:
-            left = Node(keys[0], None, None)
-            return Node(keys[1], left, None)
+    def create_tree(points):
+        if len(points) == 1:
+            return Node(points[0], None, None)
+        elif len(points) == 2:
+            left = Node(points[0], None, None)
+            return Node(points[1], left, None)
         else:
-            left = Node.create_tree(keys[0:len(keys)/2])
-            right = Node.create_tree(keys[len(keys)/2 + 1:])
-            return Node(keys[len(keys)/2], left, right)
+            left = Node.create_tree(points[0:len(points)/2])
+            right = Node.create_tree(points[len(points)/2 + 1:])
+            return Node(points[len(points)/2], left, right)
 
     def __str__(self):
         return self.tostr()
@@ -194,11 +194,48 @@ class Node(object):
             ret += "  "*(level+1) + "None\n"
         return ret
 
+class Point(object):
+    def __init__(self, coords):
+        self.coords = coords
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.coords == other.coords
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        return self.coords[0] < other.coords[0]
+
+    def __le__(self, other):
+        return self.coords[0] <= other.coords[0]
+
+    def __gt__(self, other):
+        return self.coords[0] > other.coords[0]
+
+    def __ge__(self, other):
+        return self.coords[0] >= other.coords[0]
+
+    def __hash__(self):
+        return hash(self.__str__())
+
+    def __str__(self):
+        return '(' + ','.join(self.coords) + ')'
+
+    def child(self):
+        if len(self.coords) > 1:
+            return Point(self.coords[1:])
+        else:
+            return None
+
 class Tester(object):
     def __init__(self):
         pass
 
     def runAllTests(self):
+        self.points = [Point([key]) for key in [1, 5, 10, 11, 12, 13]]
         print("running tests")
         self.testCreateTree()
         self.testInsert()
@@ -214,34 +251,30 @@ class Tester(object):
         return True
 
     def testCreateTree(self):
-        vals = [1, 5, 10, 11, 12, 13]
-        t = Node.create_tree([1, 5, 10, 11, 12, 13])
-        assert(Tester.sameSortedList(vals, t.enumerate()))
+        t = Node.create_tree(self.points)
+        assert(Tester.sameSortedList(self.points, t.enumerate()))
 
     def testInsert(self):
-        vals = [1, 5, 10, 11, 12, 13]
-        t = Node.create_tree([1, 5, 10, 11, 12, 13])
-        t.insert_key(2)
-        t.insert_key(50)
-        assert(Tester.sameSortedList([1, 2, 5, 10, 11, 12, 13, 50], t.enumerate()))
+        t = Node.create_tree(self.points)
+        t.insert_point(Point([2]))
+        t.insert_point(Point([50]))
+        assert(Tester.sameSortedList([Point([key]) for key in [1, 2, 5, 10, 11, 12, 13, 50]], t.enumerate()))
 
     def testRemove(self):
-        vals = [1, 5, 10, 11, 12, 13]
-        t = Node.create_tree([1, 5, 10, 11, 12, 13])
-        t.insert_key(2)
-        t.insert_key(50)
-        assert(Tester.sameSortedList([1, 2, 5, 10, 11, 12, 13, 50], t.enumerate()))
-        t.remove_key(1)
-        t.remove_key(10)
-        t.remove_key(50)
-        assert(Tester.sameSortedList([2, 5, 11, 12, 13], t.enumerate()))
+        t = Node.create_tree(self.points)
+        t.insert_point(Point([2]))
+        t.insert_point(Point([50]))
+        assert(Tester.sameSortedList([Point([key]) for key in [1, 2, 5, 10, 11, 12, 13, 50]], t.enumerate()))
+        t.remove_point(Point([1]))
+        t.remove_point(Point([10]))
+        t.remove_point(Point([50]))
+        assert(Tester.sameSortedList([Point([key]) for key in [2, 5, 11, 12, 13]], t.enumerate()))
 
     def testRangeQuery(self):
-        vals = [1, 5, 10, 11, 12, 13]
-        t = Node.create_tree([1, 5, 10, 11, 12, 13])
-        assert(Tester.sameSortedList([5, 10, 11], t.rangeQuery(5, 11)))
-        assert(Tester.sameSortedList([], t.rangeQuery(6, 8)))
-        assert(Tester.sameSortedList([1, 5, 10, 11, 12, 13], t.rangeQuery(0, 20)))
+        t = Node.create_tree(self.points)
+        assert(Tester.sameSortedList([Point([key]) for key in [5, 10, 11]], t.rangeQuery(Point([5]), Point([11]))))
+        assert(Tester.sameSortedList([], t.rangeQuery(Point([6]), Point([8]))))
+        assert(Tester.sameSortedList([Point([key]) for key in [1, 5, 10, 11, 12, 13]], t.rangeQuery(Point([0]), Point([20]))))
 
 
 
