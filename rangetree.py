@@ -13,7 +13,6 @@ class RangeTree(object):
 			self.fractions[root.index()] = RangeTree.Fraction(self.points[root.fro:root.to])
 			self.buildFractions(root)
 		else:
-			# invariant: node already has its fraction filled
 			index = node.index()
 			fro = node.fro
 			to = node.to
