@@ -1,7 +1,7 @@
 alpha = 0.1
 
 class Node(object):
-    def __init__(self, key, left, right):
+    def __init__(self, key, left, right, next_dim_ds):
         # self.alpha = alpha
         self.key = key
         self.size = 1
@@ -9,8 +9,9 @@ class Node(object):
         self.size += right.size if right is not None else 0
         self.left = left
         self.right = right
+        self.next_dim_ds = next_dim_ds
 
-    def insert_point(self, key):
+    def insert_key(self, key):
         if self.size > 1:
             # check balance
             left = self.left.size if self.left is not None else 0
@@ -26,22 +27,24 @@ class Node(object):
                 self.left = n.left
                 self.right = n.right
                 self.size = n.size
+                self.next_dim_ds = n.next_dim_ds
                 return
 
         # actually insert the key
         self.size += 1
+        self.next_dim_ds.insert_key(key)
         if key >= self.key:
             if self.right is None:
-                self.right = Node(key, None, None)
+                self.right = Node(key, None, None, next_dim_ds.factory([key]))
             else:
-                self.right.insert_point(key)
+                self.right.insert_key(key)
         else:
             if self.left is None:
-                self.left = Node(key, None, None)
+                self.left = Node(key, None, None, next_dim_ds.factory([key]))
             else:
-                self.left.insert_point(key)
+                self.left.insert_key(key)
 
-    def remove_point(self, key):
+    def remove_key(self, key):
         if self.size >= 2:
             # check balance
             left = self.left.size if self.left is not None else 0
@@ -57,77 +60,99 @@ class Node(object):
                 self.left = n.left
                 self.right = n.right
                 self.size = n.size
+                self.next_dim_ds = n.next_dim_ds
                 return
 
         # actually remove the key
         self.size -= 1
+        self.next_dim_ds.remove_key(key)
         if key == self.key:
             n = Node.create_tree(self.remove_enumerate(key))
             self.key = n.key
             self.left = n.left
             self.right = n.right
             self.size = n.size
+            self.next_dim_ds = n.next_dim_ds
         elif key > self.key:
             if self.right is None:
                 print("key does not exist")
                 # throw an error
             else:
-                self.right.remove_point(key)
+                self.right.remove_key(key)
         else:
             if self.left is None:
                 print("key does not exist")
                 # throw an error
             else:
-                self.left.remove_point(key)
+                self.left.remove_key(key)
 
-    def rangeQuery(self, xmin, xsup):
-        if self.key > xsup:
+    def rangeQuery(self, rawMin, rawMax, d=0, toReturn=None):
+        minCoords = [min(rawMin.coords[i], rawMax.coords[i]) for i in range(len(rawMin.coords))]
+        pointMin = Point(minCoords)
+        maxCoords = [max(rawMin.coords[i], rawMax.coords[i]) for i in range(len(rawMin.coords))]
+        pointMax = Point(maxCoords)
+        if self.key > pointMax:
             if self.left is not None:
-                return self.left.rangeQuery(xmin, xsup)
+                return self.left.rangeQuery(pointMin, pointMax)
             else:
                 return []
-        elif self.key < xmin:
+        elif self.key < pointMin:
             if self.right is not None:
-                return self.right.rangeQuery(xmin, xsup)
+                return self.right.rangeQuery(pointMin, pointMax)
             else:
                 return []
         else:
             toReturn = []
             if self.left is not None:
-                self.left.searchLeft(xmin, toReturn)
-            toReturn.append(self.key)
+                self.left.searchLeft(pointMin, pointMax, toReturn)
+
+            if self.key >= pointMin and self.key <= pointMax:
+                toReturn.append(self.key)
+
             if self.right is not None:
-                self.right.searchRight(xsup, toReturn)
+                self.right.searchRight(pointMin, pointMax, toReturn)
             return toReturn
 
-    def searchLeft(self, xmin, toReturn):
+    def searchLeft(self, pointMin, pointMax, toReturn):
         if self.left is None and self.right is None:
-            if self.key >= xmin:
+            if self.key >= pointMax and self.key <= pointMax:
                 toReturn.append(self.key)
         else:
-            if self.key >= xmin:
+            if self.key >= pointMin:
                 if self.left is not None:
-                    self.left.searchLeft(xmin, toReturn)
-                toReturn.append(self.key)
+                    self.left.searchLeft(pointMin, pointMax, toReturn)
+
+                if self.key >= pointMin and self.key <= pointMax:
+                    toReturn.append(self.key)
+
                 if self.right is not None:
-                    toReturn.extend(self.right.enumerate())
+                    if d + 1 == len(self.key.coords):
+                        toReturn.extend(self.right.enumerate())
+                    else:
+                        toReturn.extend(self.right.next_dim_ds.rangeQuery(pointMin, pointMax, d + 1, toReturn))
             else:
-                self.right.searchLeft(xmin, toReturn)
+                self.right.searchLeft(pointMin, pointMax, toReturn)
 
 
-    def searchRight(self, xmax, toReturn):
+    def searchRight(self, pointMin, pointMax, toReturn):
         if self.left is None and self.right is None:
-            if self.key <= xmax:
+            if self.key <= pointMax and self.key <= pointMax:
                 toReturn.append(self.key)
         else:
-            if self.key <= xmax:
+            if self.key <= pointMax:
                 if self.left is not None:
-                    toReturn.extend(self.left.enumerate())
-                toReturn.append(self.key)
+                    if d + 1 == len(self.key.coords):
+                        toReturn.extend(self.left.enumerate())
+                    else:
+                        toReturn.extend(self.left.next_dim_ds.rangeQuery(pointMin, pointMax, d + 1, toReturn))
+                
+                if self.key <= pointMax and self.key >= pointMin:
+                    toReturn.append(self.key)
+
                 if self.right is not None:
-                    self.right.searchRight(xmax, toReturn)
+                    self.right.searchRight(pointMin, pointMax, toReturn)
             else:
-                self.left.searchRight(xmax, toReturn)
+                self.left.searchRight(pointMin, pointMax, toReturn)
 
 
     def enumerate(self, newKey=None):
@@ -139,7 +164,9 @@ class Node(object):
                 to_return = self.left.enumerate(None)
         elif newKey is not None and newKey < self.key:
             to_return = [newKey]
+
         to_return.append(self.key)
+
         if self.right is not None:
             if newKey is not None and newKey >= self.key:
                 to_return.extend(self.right.enumerate(newKey))
@@ -156,8 +183,10 @@ class Node(object):
                 to_return = self.left.remove_enumerate(delKey)
             else:
                 to_return = self.left.remove_enumerate(None)
+
         if self.key != delKey:
             to_return.append(self.key)
+            
         if self.right is not None:
             if delKey is not None and delKey > self.key:
                 to_return.extend(self.right.remove_enumerate(delKey))
@@ -176,6 +205,9 @@ class Node(object):
             left = Node.create_tree(points[0:len(points)/2])
             right = Node.create_tree(points[len(points)/2 + 1:])
             return Node(points[len(points)/2], left, right)
+
+    def factory(self, points):
+        return Node.create_tree(points)
 
     def __str__(self):
         return self.tostr()
@@ -207,16 +239,18 @@ class Point(object):
         return not self == other
 
     def __lt__(self, other):
+        if self.coords[0] == other.coords[0]:
+            return self.child() < other.child()
         return self.coords[0] < other.coords[0]
 
     def __le__(self, other):
-        return self.coords[0] <= other.coords[0]
+        return self == other or self < other
 
     def __gt__(self, other):
-        return self.coords[0] > other.coords[0]
+        return not self <= other
 
     def __ge__(self, other):
-        return self.coords[0] >= other.coords[0]
+        return self == other or self > other
 
     def __hash__(self):
         return hash(self.__str__())
@@ -256,18 +290,18 @@ class Tester(object):
 
     def testInsert(self):
         t = Node.create_tree(self.points)
-        t.insert_point(Point([2]))
-        t.insert_point(Point([50]))
+        t.insert_key(Point([2]))
+        t.insert_key(Point([50]))
         assert(Tester.sameSortedList([Point([key]) for key in [1, 2, 5, 10, 11, 12, 13, 50]], t.enumerate()))
 
     def testRemove(self):
         t = Node.create_tree(self.points)
-        t.insert_point(Point([2]))
-        t.insert_point(Point([50]))
+        t.insert_key(Point([2]))
+        t.insert_key(Point([50]))
         assert(Tester.sameSortedList([Point([key]) for key in [1, 2, 5, 10, 11, 12, 13, 50]], t.enumerate()))
-        t.remove_point(Point([1]))
-        t.remove_point(Point([10]))
-        t.remove_point(Point([50]))
+        t.remove_key(Point([1]))
+        t.remove_key(Point([10]))
+        t.remove_key(Point([50]))
         assert(Tester.sameSortedList([Point([key]) for key in [2, 5, 11, 12, 13]], t.enumerate()))
 
     def testRangeQuery(self):
