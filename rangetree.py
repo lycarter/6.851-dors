@@ -1,5 +1,3 @@
-import copy
-
 # translation of https://github.com/elazarl/RangeTree/blob/master/src/main/java/com/github/elazarl/rangetree/RangeTree.java
 
 class RangeTree(object):
@@ -12,7 +10,7 @@ class RangeTree(object):
 	def buildFractions(self, node=None):
 		if node is None:
 			root = self._root()
-			self.fractions[root.index()] = RangeTree.Fraction(copy.deepcopy(self.points))
+			self.fractions[root.index()] = RangeTree.Fraction(self.points[root.fro:root.to])
 			self.buildFractions(root)
 		else:
 			# invariant: node already has its fraction filled
@@ -20,15 +18,14 @@ class RangeTree(object):
 			fro = node.fro
 			to = node.to
 			if node.lc() is not None:
-				self.fractions[node.index()] = RangeTree.Fraction(copy.deepcopy(self.points[node.fro:node.to]))
+				self.fractions[node.index()] = RangeTree.Fraction(self.points[node.fro:node.to])
 				RangeTree._linkFraction(self.fractions[index], self.fractions[index].left, self.fractions[node.index()])
 				self.buildFractions(node)
 			else:
-				# Arrays.fill(fractions[index].left, -1)
 				self.fractions[index].left = [-1 for i in range(len(self.fractions[index].left))]
 			node.become(fro, to)
 			if node.rc() is not None:
-				self.fractions[node.index()] = RangeTree.Fraction(copy.deepcopy(self.points[node.fro:node.to]))
+				self.fractions[node.index()] = RangeTree.Fraction(self.points[node.fro:node.to])
 				RangeTree._linkFraction(self.fractions[index], self.fractions[index].right, self.fractions[node.index()])
 				self.buildFractions(node)
 			else:
