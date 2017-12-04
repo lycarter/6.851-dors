@@ -1,7 +1,20 @@
 alpha = 0.1
 
+class dummyDs(object):
+    def __init__(self):
+        pass
+
+    def insert_key(self, key):
+        pass
+
+    def remove_key(self, key):
+        pass
+
+    def factory(self, arg):
+        return dummyDs()
+
 class Node(object):
-    def __init__(self, key, left, right, next_dim_ds):
+    def __init__(self, key, left, right, next_dim_ds=None):
         # self.alpha = alpha
         self.key = key
         self.size = 1
@@ -9,6 +22,8 @@ class Node(object):
         self.size += right.size if right is not None else 0
         self.left = left
         self.right = right
+        if next_dim_ds is None:
+            next_dim_ds = dummyDs()
         self.next_dim_ds = next_dim_ds
 
     def insert_key(self, key):
@@ -35,12 +50,12 @@ class Node(object):
         self.next_dim_ds.insert_key(key)
         if key >= self.key:
             if self.right is None:
-                self.right = Node(key, None, None, next_dim_ds.factory([key]))
+                self.right = Node(key, None, None, self.next_dim_ds.factory([key]))
             else:
                 self.right.insert_key(key)
         else:
             if self.left is None:
-                self.left = Node(key, None, None, next_dim_ds.factory([key]))
+                self.left = Node(key, None, None, self.next_dim_ds.factory([key]))
             else:
                 self.left.insert_key(key)
 
@@ -86,7 +101,7 @@ class Node(object):
             else:
                 self.left.remove_key(key)
 
-    def rangeQuery(self, rawMin, rawMax, d=0, toReturn=None):
+    def rangeQuery(self, rawMin, rawMax, toReturn=None):
         minCoords = [min(rawMin.coords[i], rawMax.coords[i]) for i in range(len(rawMin.coords))]
         pointMin = Point(minCoords)
         maxCoords = [max(rawMin.coords[i], rawMax.coords[i]) for i in range(len(rawMin.coords))]
@@ -115,7 +130,7 @@ class Node(object):
 
     def searchLeft(self, pointMin, pointMax, toReturn):
         if self.left is None and self.right is None:
-            if self.key >= pointMax and self.key <= pointMax:
+            if self.key <= pointMax and self.key >= pointMin:
                 toReturn.append(self.key)
         else:
             if self.key >= pointMin:
@@ -126,25 +141,25 @@ class Node(object):
                     toReturn.append(self.key)
 
                 if self.right is not None:
-                    if d + 1 == len(self.key.coords):
+                    if len(self.key.coords) == 1:
                         toReturn.extend(self.right.enumerate())
                     else:
-                        toReturn.extend(self.right.next_dim_ds.rangeQuery(pointMin, pointMax, d + 1, toReturn))
+                        toReturn.extend(self.right.next_dim_ds.rangeQuery(pointMin, pointMax, toReturn))
             else:
                 self.right.searchLeft(pointMin, pointMax, toReturn)
 
 
     def searchRight(self, pointMin, pointMax, toReturn):
         if self.left is None and self.right is None:
-            if self.key <= pointMax and self.key <= pointMax:
+            if self.key >= pointMin and self.key <= pointMax:
                 toReturn.append(self.key)
         else:
             if self.key <= pointMax:
                 if self.left is not None:
-                    if d + 1 == len(self.key.coords):
+                    if len(self.key.coords) == 1:
                         toReturn.extend(self.left.enumerate())
                     else:
-                        toReturn.extend(self.left.next_dim_ds.rangeQuery(pointMin, pointMax, d + 1, toReturn))
+                        toReturn.extend(self.left.next_dim_ds.rangeQuery(pointMin, pointMax, toReturn))
                 
                 if self.key <= pointMax and self.key >= pointMin:
                     toReturn.append(self.key)
@@ -256,7 +271,8 @@ class Point(object):
         return hash(self.__str__())
 
     def __str__(self):
-        return '(' + ','.join(self.coords) + ')'
+        s = [str(c) for c in self.coords]
+        return '(' + ','.join(s) + ')'
 
     def child(self):
         if len(self.coords) > 1:
@@ -308,7 +324,7 @@ class Tester(object):
         t = Node.create_tree(self.points)
         assert(Tester.sameSortedList([Point([key]) for key in [5, 10, 11]], t.rangeQuery(Point([5]), Point([11]))))
         assert(Tester.sameSortedList([], t.rangeQuery(Point([6]), Point([8]))))
-        assert(Tester.sameSortedList([Point([key]) for key in [1, 5, 10, 11, 12, 13]], t.rangeQuery(Point([0]), Point([20]))))
+        assert(Tester.sameSortedList(self.points, t.rangeQuery(Point([0]), Point([20]))))
 
 
 
