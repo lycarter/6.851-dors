@@ -10,6 +10,9 @@ class dummyDs(object):
     def remove_key(self, key):
         pass
 
+    def create_ds(self, points):
+        return dummyDs()
+
     def factory(self, arg):
         return dummyDs()
 
@@ -23,9 +26,12 @@ class Node(object):
         self.left = left
         self.right = right
         if next_dim_ds is None:
-            next_dim_ds = dummyDs()
+            if len(self.key.coords) > 1:
+                next_dim_ds = Node(self.key.child(), None, None)
+            else:
+                next_dim_ds = dummyDs()
         self.next_dim_ds = next_dim_ds
-        print("i am %s and my next is %s" % (key, next_dim_ds))
+        # print("i am %s and my next is %s" % (key, next_dim_ds))
 
     def insert_key(self, key):
         if self.size > 1:
@@ -38,7 +44,7 @@ class Node(object):
                 left += 1
             if left < alpha*self.size or right < alpha*self.size:
                 # need to rebalance
-                n = Node.create_ds(self.enumerate(key), self.next_dim_ds)
+                n = self.create_ds(self.enumerate(key), self.next_dim_ds)
                 self.key = n.key
                 self.left = n.left
                 self.right = n.right
@@ -48,6 +54,7 @@ class Node(object):
 
         # actually insert the key
         self.size += 1
+        # print("i am %s" % self.key)
         self.next_dim_ds.insert_key(key)
         if key >= self.key:
             if self.right is None:
@@ -71,7 +78,7 @@ class Node(object):
                 left -= 1
             if left < alpha*self.size or right < alpha*self.size:
                 # need to rebalance
-                n = Node.create_ds(self.remove_enumerate(key), self.next_dim_ds)
+                n = self.create_ds(self.remove_enumerate(key), self.next_dim_ds)
                 self.key = n.key
                 self.left = n.left
                 self.right = n.right
@@ -83,7 +90,7 @@ class Node(object):
         self.size -= 1
         self.next_dim_ds.remove_key(key)
         if key == self.key:
-            n = Node.create_ds(self.remove_enumerate(key))
+            n = self.create_ds(self.remove_enumerate(key))
             self.key = n.key
             self.left = n.left
             self.right = n.right
@@ -109,7 +116,7 @@ class Node(object):
         pointMax = Point(maxCoords)
         print("pmin is %s" % pointMin)
         print("pmax is %s" % pointMax)
-        print("i am %s and my next ds is %s" % (self.key, self.next_dim_ds))
+        # print("i am %s and my next ds is %s" % (self.key, self.next_dim_ds))
         if self.key > pointMax:
             if self.left is not None:
                 return self.left.rangeQuery(pointMin, pointMax)
@@ -121,7 +128,7 @@ class Node(object):
             else:
                 return []
         else:
-            print("got to split")
+            # print("got to split")
             toReturn = []
             if self.left is not None:
                 self.left.searchLeft(pointMin, pointMax, toReturn)
@@ -214,12 +221,12 @@ class Node(object):
                 to_return.extend(self.right.remove_enumerate(None))
         return to_return
 
-    @staticmethod
-    def create_ds(points, next_dim_ds=None):
+    def create_ds(self, points, next_dim_ds=None):
         # print("i am making a ds, and my points follow")
         # for point in points:
         #     print point
         # print("i am done")
+
         if next_dim_ds is not None:
             next_dim_ds.create_ds([point.child() for point in points])
         if len(points) == 1:
@@ -228,12 +235,13 @@ class Node(object):
             left = Node(points[0], None, None)
             return Node(points[1], left, None)
         else:
-            left = Node.create_ds(points[0:len(points)/2])
-            right = Node.create_ds(points[len(points)/2 + 1:])
+            left = self.create_ds(points[0:len(points)/2])
+            right = self.create_ds(points[len(points)/2 + 1:])
             return Node(points[len(points)/2], left, right, next_dim_ds)
 
+
     def factory(self, points):
-        return Node.create_ds(points)
+        return self.create_ds(points)
 
     def __str__(self):
         return self.tostr()
@@ -256,7 +264,8 @@ class Point(object):
     def __init__(self, coords, root=None):
         self.coords = coords
         if root is None:
-            self.root = self
+            root = self
+        self.root = root
 
     def __eq__(self, other):
         if other is None:
@@ -304,7 +313,8 @@ class Tester(object):
         # self.testInsert()
         # self.testRemove()
         # self.testRangeQuery()
-        self.test2DRangeQuery()
+        # self.test2DRangeQuery()
+        self.test3DRangeQuery()
         print("all tests succeeded")
 
     @staticmethod
@@ -315,16 +325,19 @@ class Tester(object):
         return True
 
     def testCreateTree(self):
+        # note: depracated
         t = Node.create_ds(self.points)
         assert(Tester.sameSortedList(self.points, t.enumerate()))
 
     def testInsert(self):
+        # note: depracated
         t = Node.create_ds(self.points)
         t.insert_key(Point([2]))
         t.insert_key(Point([50]))
         assert(Tester.sameSortedList([Point([key]) for key in [1, 2, 5, 10, 11, 12, 13, 50]], t.enumerate()))
 
     def testRemove(self):
+        # note: depracated
         t = Node.create_ds(self.points)
         t.insert_key(Point([2]))
         t.insert_key(Point([50]))
@@ -335,6 +348,7 @@ class Tester(object):
         assert(Tester.sameSortedList([Point([key]) for key in [2, 5, 11, 12, 13]], t.enumerate()))
 
     def testRangeQuery(self):
+        # note: depracated
         t = Node.create_ds(self.points)
         assert(Tester.sameSortedList([Point([key]) for key in [5, 10, 11]], t.rangeQuery(Point([5]), Point([11]))))
         assert(Tester.sameSortedList([], t.rangeQuery(Point([6]), Point([8]))))
@@ -342,10 +356,31 @@ class Tester(object):
 
     def test2DRangeQuery(self):
         points = [Point(key) for key in [[0,0], [1,7], [3,3], [5,5], [6, 2]]]
-        t = Node.create_ds(points, Node(Point([0]), None, None))
-        # points = t.rangeQuery(Point([0,8]), Point([1,0]))
-        # for point in points:
-            # print point
+        derp = Node(Point([0]), None, None)
+        t = derp.create_ds(points, Node(Point([0]), None, None))
+        # t = Node(Point([0]), None, None).create_ds(points, Node(Point([0]), None, None))
+        points = t.rangeQuery(Point([0,8]), Point([1,0]))
+        for point in points:
+            print point
+
+    def test3DRangeQuery(self):
+        # points = [Point(key) for key in [[0,0,0], [5,5,5], [0,7,7], [7,0,0], [12,12,0], [0,8,0]]]
+        # derp = Node(Point([0]), None, None)
+        # t = derp.create_ds(points, Node(Point([0,0]), None, None, Node(Point([0]), None, None)))
+        t = Node(Point([0,0,0]), None, None) # inside range
+        t.insert_key(Point([5,5,5])) # inside range
+        t.insert_key(Point([50,50,50])) # outside range
+        t.insert_key(Point([2, 50, 50])) # outside range on dims 2 and 3
+        t.insert_key(Point([2,2,2])) # inside range (but later removed)
+        t.insert_key(Point([2, 7, 8])) # inside range
+        t.insert_key(Point([-5, 4, 3])) # outside range
+        t.remove_key(Point([2,2,2]))
+        returned_points = t.rangeQuery(Point([0,0,0]), Point([20,10,20]))
+        for point in returned_points:
+            print point
+            # print point.root
+
+        assert(Tester.sameSortedList(returned_points, [Point([0,0,0]), Point([2,7,8]), Point([5,5,5])]))
 
         # note to self: just need to figure out the exact conditions of this recursion and creation of next-ds
 
