@@ -1,3 +1,7 @@
+import random
+import time
+from datetime import datetime
+
 alpha = 0.1
 
 class dummyDs(object):
@@ -34,7 +38,11 @@ class Node(object):
         # print("i am %s and my next is %s" % (key, next_dim_ds))
 
     def insert_key(self, key):
+        # print("hi i'm %s, and %s is being inserted. current state follows" % (self.key, key))
+        # print("%s" % self)
+
         if self.size > 1:
+            # print "branch 1"
             # check balance
             left = self.left.size if self.left is not None else 0
             right = self.right.size if self.right is not None else 0
@@ -43,6 +51,7 @@ class Node(object):
             else:
                 left += 1
             if left < alpha*self.size or right < alpha*self.size:
+                # print "need to rebalance"
                 # need to rebalance
                 n = self.create_ds(self.enumerate(key), self.next_dim_ds)
                 self.key = n.key
@@ -55,19 +64,23 @@ class Node(object):
         # actually insert the key
         self.size += 1
         # print("i am %s" % self.key)
-        self.next_dim_ds.insert_key(key)
+        self.next_dim_ds.insert_key(key.child())
+        # if self.key is None:
         if key >= self.key:
+            # print "bigger than me"
             if self.right is None:
                 self.right = Node(key, None, None, self.next_dim_ds.factory([key.child()]))
             else:
                 self.right.insert_key(key)
         else:
+            # print "smaller than me"
             if self.left is None:
                 self.left = Node(key, None, None, self.next_dim_ds.factory([key.child()]))
             else:
                 self.left.insert_key(key)
 
     def remove_key(self, key):
+        # print self
         if self.size >= 2:
             # check balance
             left = self.left.size if self.left is not None else 0
@@ -88,7 +101,7 @@ class Node(object):
 
         # actually remove the key
         self.size -= 1
-        self.next_dim_ds.remove_key(key)
+        self.next_dim_ds.remove_key(key.child())
         if key == self.key:
             n = self.create_ds(self.remove_enumerate(key))
             self.key = n.key
@@ -114,8 +127,8 @@ class Node(object):
         pointMin = Point(minCoords)
         maxCoords = [max(rawMin.coords[i], rawMax.coords[i]) for i in range(len(rawMin.coords))]
         pointMax = Point(maxCoords)
-        print("pmin is %s" % pointMin)
-        print("pmax is %s" % pointMax)
+        # print("pmin is %s" % pointMin)
+        # print("pmax is %s" % pointMax)
         # print("i am %s and my next ds is %s" % (self.key, self.next_dim_ds))
         if self.key > pointMax:
             if self.left is not None:
@@ -156,9 +169,10 @@ class Node(object):
                     if len(self.key.coords) == 1:
                         toReturn.extend(self.right.enumerate())
                     else:
-                        toReturn.extend(self.right.next_dim_ds.rangeQuery(pointMin, pointMax, toReturn))
+                        toReturn.extend(self.right.next_dim_ds.rangeQuery(pointMin.child(), pointMax.child(), toReturn))
             else:
-                self.right.searchLeft(pointMin, pointMax, toReturn)
+                if self.right is not None:
+                    self.right.searchLeft(pointMin, pointMax, toReturn)
 
 
     def searchRight(self, pointMin, pointMax, toReturn):
@@ -171,7 +185,7 @@ class Node(object):
                     if len(self.key.coords) == 1:
                         toReturn.extend(self.left.enumerate())
                     else:
-                        toReturn.extend(self.left.next_dim_ds.rangeQuery(pointMin, pointMax, toReturn))
+                        toReturn.extend(self.left.next_dim_ds.rangeQuery(pointMin.child(), pointMax.child(), toReturn))
                 
                 if self.key <= pointMax and self.key >= pointMin:
                     toReturn.append(self.key)
@@ -179,7 +193,8 @@ class Node(object):
                 if self.right is not None:
                     self.right.searchRight(pointMin, pointMax, toReturn)
             else:
-                self.left.searchRight(pointMin, pointMax, toReturn)
+                if self.left is not None:
+                    self.left.searchRight(pointMin, pointMax, toReturn)
 
 
     def enumerate(self, newKey=None):
@@ -235,6 +250,7 @@ class Node(object):
             left = Node(points[0], None, None)
             return Node(points[1], left, None)
         else:
+            # print(points[0:len(points)/2])
             left = self.create_ds(points[0:len(points)/2])
             right = self.create_ds(points[len(points)/2 + 1:])
             return Node(points[len(points)/2], left, right, next_dim_ds)
@@ -276,6 +292,8 @@ class Point(object):
         return not self == other
 
     def __lt__(self, other):
+        if other is None:
+            print self
         if self.coords[0] == other.coords[0]:
             return self.child() < other.child()
         return self.coords[0] < other.coords[0]
@@ -314,7 +332,9 @@ class Tester(object):
         # self.testRemove()
         # self.testRangeQuery()
         # self.test2DRangeQuery()
-        self.test3DRangeQuery()
+        # self.test3DRangeQuery()
+        self.benchmark3DRangeQuery(10, 1)
+        # self.manual_testing()
         print("all tests succeeded")
 
     @staticmethod
@@ -384,8 +404,42 @@ class Tester(object):
 
         # note to self: just need to figure out the exact conditions of this recursion and creation of next-ds
 
+    def benchmark3DRangeQuery(self, n, k):
+        maxDim = n 
+        t = Node(Point([0,0,0]), None, None)
+        for i in range(n):
+            newPoint = Point([random.randint(0,maxDim), random.randint(0,maxDim), random.randint(0,maxDim)])
+            # print("inserting %s" % newPoint)
+            t.insert_key(newPoint)
+            # print(t)
+
+        queryPairs = []
+
+        for j in range(k):
+            queryPairs.append([Point([random.randint(0,maxDim), random.randint(0,maxDim), random.randint(0,maxDim)]),
+                Point([random.randint(0,maxDim), random.randint(0,maxDim), random.randint(0,maxDim)])])
+        
+        print "starting benchmarking run"
+        # dt = datetime.now()
+        tt = time.time()
+
+        for j in range(k):
+            t.rangeQuery(queryPairs[j][0], queryPairs[j][1])
+
+        # dt2 = datetime.now()
+        # print dt2.microsecond - dt.microsecond
+        print time.time() - tt
+
+    def manual_testing(self):
+        t = Node(Point([0,0,0]), None, None)
+        t.insert_key(Point([3,5,9]))
+        t.insert_key(Point([5,10,12]))
+        t.insert_key(Point([0,7,2]))
+        print(t)
+
+
 
 
 t = Tester()
-t.runAllTests()
+t.benchmark3DRangeQuery(1000, 10000)
 
