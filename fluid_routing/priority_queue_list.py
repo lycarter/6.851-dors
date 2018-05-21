@@ -12,8 +12,9 @@ class queue():
         self._set = set([])
 
     def insert(self, item):
-        heapq.heappush(self._U, item)
+        self._U.append(item)
         self._set.add(item)
+        self._U.sort()
 
     def top(self):
         if len(self._U) > 0:
@@ -32,10 +33,8 @@ class queue():
                 return t.k
 
     def pop(self):
-        item = heapq.heappop(self._U)
-        if item not in self._set:
-            print(item.k)
-            print ', '.join([str(i.k) for i in self._set])
+        item = self._U.pop(0)
+        self._U.sort
         self._set.remove(item)
         return item
 
@@ -44,7 +43,7 @@ class queue():
         # reduce this to logarithmic time without any further penalties.
         self._set.remove(item)
         self._U.remove(item)
-        heapq.heapify(self._U)
+        self._U.sort()
 
 
     def __contains__(self, key):

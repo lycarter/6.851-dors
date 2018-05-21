@@ -1,6 +1,6 @@
 """LPA* implementation in Python."""
 
-import priority_queue as pq
+import priority_queue_dict as pq
 
 # c: cost
 # g*(s): dist from start to s
