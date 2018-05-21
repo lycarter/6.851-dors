@@ -1,5 +1,5 @@
 import priority_queue as pq1
-import priority_queue_dict as pq2
+import priority_queue_treap as pq2
 import random
 
 class DummyItem():
@@ -52,7 +52,7 @@ items = set([])
 for i in range(10):
 	print("starting trial %s" % i)
 # test insert
-	for i in range(20):
+	for i in range(50):
 		item = generate_item()
 		items.add(item)
 		pqInst1.insert(item)
@@ -60,6 +60,8 @@ for i in range(10):
 
 	# test top & pop
 	for i in range(10):
+		print pqInst1.top().k
+		print pqInst2.top().k
 		assert(pqInst1.top() == pqInst2.top())
 		itemPopped = pqInst1.pop()
 		assert(itemPopped == pqInst2.pop())
