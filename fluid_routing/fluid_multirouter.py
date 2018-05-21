@@ -211,7 +211,7 @@ def test_2():
     def fluid_is_valid(pos):
         return max(pos) <= 10 and min(pos) >= 0
 
-    bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=False)
+    bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=True)
     (paths, cost) = bfs_obj.find_solution()
     print "\n\n\n"
     for path in paths:
