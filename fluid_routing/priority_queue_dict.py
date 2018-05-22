@@ -11,7 +11,7 @@ class queue():
         self._U = {}
         self._list_U = None
 
-    def insert(self, item):
+    def insert(self, item): # ncalls = 172885
         # print("insert called with %s" % item.k)
         listItem = LinkedList(item)
         if self._list_U == None:
@@ -23,13 +23,13 @@ class queue():
         self._U[item] = listItem
         # print "on insert " + str(self._list_U)
 
-    def top(self):
+    def top(self): # ncalls = 17934
         if self._list_U:
             return self._list_U.val
         else:
             return None
 
-    def topKey(self):
+    def topKey(self): # ncalls = 17934
         t = self.top()
         if type(t) == tuple:
             return t
@@ -39,7 +39,7 @@ class queue():
             else:
                 return t.k
 
-    def pop(self):
+    def pop(self): # ncalls = 169390
         topListItem = self._list_U
         self._list_U = topListItem.next
         item = topListItem.pop()
@@ -47,7 +47,7 @@ class queue():
         del self._U[item]
         return item
 
-    def remove(self, item):
+    def remove(self, item): # ncalls = 154753
         # Note that this is a linear-time operation. Reimplementing as a treap would
         # reduce this to logarithmic time without any further penalties.
         listItem = self._U[item]
@@ -57,10 +57,10 @@ class queue():
         del self._U[item]
 
 
-    def __contains__(self, key):
+    def __contains__(self, key): # ncalls = 312168
         return key in self._U
 
-    def __len__(self):
+    def __len__(self): # ncalls = 568
         return len(self._U)
 
     def printQueue(self):

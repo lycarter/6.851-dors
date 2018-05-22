@@ -1,5 +1,5 @@
 import priority_queue as pq1
-import priority_queue_treap as pq2
+import priority_queue_treap_pypi as pq2
 import random
 
 class DummyItem():
@@ -60,9 +60,10 @@ for i in range(10):
 
 	# test top & pop
 	for i in range(10):
-		print pqInst1.top().k
-		print pqInst2.top().k
 		assert(pqInst1.top() == pqInst2.top())
+		itemPopped = pqInst1.pop()
+		assert(itemPopped == pqInst2.pop())
+		items.remove(itemPopped)
 		itemPopped = pqInst1.pop()
 		assert(itemPopped == pqInst2.pop())
 		items.remove(itemPopped)

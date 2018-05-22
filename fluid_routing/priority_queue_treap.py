@@ -32,9 +32,23 @@ class queue():
                 return t.k
 
     def pop(self):
+        print("pop called")
         item = self._treap.find_kth(1).key
-        self._treap.delete(item)
+        print("item is %s" % (item,))
+        if self._treap.find(item):
+            print("\ttreap has item")
+        else:
+            print("\t\t\t\ttreap does not have item")
+            print(self._treap.find_kth(1).key)
+            print(self._treap.size())
         self._set.remove(item)
+        print("\tresult of treap delete: %s" % (self._treap.delete(item),))
+        if self._treap.find(item):
+            print("\t\t\t\ttreap *still* has item")
+            print(self._treap)
+        else:
+            print("\ttreap has removed item")
+
         return item
 
     def remove(self, item):
