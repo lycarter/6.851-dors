@@ -5,7 +5,7 @@ import numpy as np
 import lpa_fluid_router as flpa
 import random
 import lpa_math
-import priority_queue as pq
+import priority_queue_treap_pypi as pq
 
 class FLPA_BFS(object):
     """BFS Python implementation."""
