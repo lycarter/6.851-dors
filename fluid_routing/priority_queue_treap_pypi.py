@@ -37,8 +37,24 @@ class queue():
             item = None
         return item
 
+    # def remove(self, item):
+    #     print("called from elsewhere")
+    #     self._treap.remove(item)
+
     def remove(self, item):
-        del self._treap[item]
+        if item in self._treap:
+            try:
+                self._treap.remove(item)
+            except KeyError, e:
+                print("got a key error on remove")
+                print(item)
+                print(item in self._treap)
+                for thing in self._treap:
+                    print thing
+                raise e
+        else:
+            print("special remove called on thing that doesn't exist")
+            pass
 
     def __contains__(self, key):
         return key in self._treap

@@ -5,7 +5,7 @@ import numpy as np
 import lpa_fluid_router as flpa
 import random
 import lpa_math
-import priority_queue_treap_pypi as pq
+import priority_queue as pq
 
 class FLPA_BFS(object):
     """BFS Python implementation."""
@@ -36,6 +36,7 @@ class FLPA_BFS(object):
 
         self.flpa_queue = pq.queue()
         self.flpa_queue.insert((-1,tuple(flpa_list)))
+        self._flpa_cache = {}
 
     def _check_edge_collision(self, edge_1, edge_2):
         a0 = np.array(edge_1[0].pos)
@@ -61,7 +62,7 @@ class FLPA_BFS(object):
                 if self.debug:
                     print "node overlap conflict at %s" % (node.pos,)
                 self._split_flpa_pos(flpa_list, flpa_index_1, flpa_index_2,
-                                     node.pos, flpa_cost)
+                                     node, flpa_cost)
                 return False
 
         # check edge collisions
@@ -94,14 +95,20 @@ class FLPA_BFS(object):
                 print "Solving new FLPA"
             route_flpa.computeShortestPath()
             if self.debug: print "computed shortest path"
-            (tmp_path, cost) = route_flpa.getShortestPath()
+            (tmp_path, cost) = route_flpa.getShortestPath(debug_override=True)
+            if self.debug: print "got shortest path"
             if tmp_path is None:
+                if self.debug: print "path is none"
                 return (None, float("inf"))
+            if self.debug: print "appending"
             paths.append(tmp_path)
+            if self.debug: print "appended"
             total_flpa_cost += cost
+            if self.debug: print "added"
 
         # collision check
         if self.debug:
+            print "performing collision check"
             for path in paths:
                 print "Potential path is:"
                 for node in path:
@@ -112,8 +119,9 @@ class FLPA_BFS(object):
                                               paths[j], total_flpa_cost):
                     continue
                 else:
+                    if self.debug: print "returning nothing"
                     return (None, float("inf"))
-
+        if self.debug: print "actually returning something"
         return (paths, total_flpa_cost)
 
 
@@ -121,35 +129,59 @@ class FLPA_BFS(object):
                          edge_2, cost):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
+        left_flpa_list = list(copy.copy(flpa_list))
+        right_flpa_list = list(flpa_list)
 
-        # split left
-        left_flpa_list = copy.deepcopy(flpa_list)
-        left_flpa_list[flpa_index_1].make_edge_impassable(edge_1)
-        
-        right_flpa_list = copy.deepcopy(flpa_list)
-        right_flpa_list[flpa_index_2].make_edge_impassable(edge_2)
-
+        left_flpa_list = self._split_single_edge(left_flpa_list, flpa_index_1, edge_1)
+        right_flpa_list = self._split_single_edge(right_flpa_list, flpa_index_2, edge_2)
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_pos,
+    def _split_single_edge(self, flpa_list, flpa_index, edge):
+        flpa_constraints = flpa_list[flpa_index].get_constraints() # (node, edge)
+        flpa_constraints[1].add(edge)
+        hashable_flpa_constraints = (tuple(i) for i in flpa_constraints)
+        flpa_constraints[1].remove(edge)
+        if hashable_flpa_constraints in self._flpa_cache:
+            print("\t\t\t\t\t\t\t\tthe queue did something!")
+            new_flpa = self._flpa_cache[hashable_flpa_constraints]
+        else:
+            new_flpa = copy.deepcopy(flpa_list[flpa_index])
+            new_flpa.make_edge_impassable(edge)
+            self._flpa_cache[hashable_flpa_constraints] = new_flpa
+        flpa_list[flpa_index] = new_flpa
+
+        return tuple(flpa_list)
+
+
+    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
                         cost):
         """Splits two routes at bad_pos and appends the new search objects to
         the flpa_queue."""
 
-        # split left
-        left_flpa_list = copy.deepcopy(flpa_list)
-        tmp_flpa = left_flpa_list[flpa_index_1]
-        tmp_flpa.make_node_impassable(
-            tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
+        left_flpa_list = list(copy.copy(flpa_list))
+        right_flpa_list = list(flpa_list)
 
-        # split right
-        right_flpa_list = copy.deepcopy(flpa_list)
-        tmp_flpa = right_flpa_list[flpa_index_2]
-        tmp_flpa.make_node_impassable(
-            tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
-
+        left_flpa_list = self._split_single_pos(left_flpa_list, flpa_index_1, bad_node)
+        right_flpa_list = self._split_single_pos(right_flpa_list, flpa_index_2, bad_node)
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
+
+
+    def _split_single_pos(self, flpa_list, flpa_index, node):
+        flpa_constraints = flpa_list[flpa_index].get_constraints() # (node, edge)
+        flpa_constraints[0].add(node)
+        hashable_flpa_constraints = (tuple(i) for i in flpa_constraints)
+        flpa_constraints[0].remove(node)
+        if hashable_flpa_constraints in self._flpa_cache:
+            print("\t\t\t\t\t\t\t\tthe queue did something!")
+            new_flpa = self._flpa_cache[hashable_flpa_constraints]
+        else:
+            new_flpa = copy.deepcopy(flpa_list[flpa_index])
+            new_flpa.make_node_impassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))
+            self._flpa_cache[hashable_flpa_constraints] = new_flpa
+        flpa_list[flpa_index] = new_flpa
+
+        return tuple(flpa_list)
 
     def _queue_insert(self, l1, l2, cost):
         """Inserts l1 and l2 into the priority queue with appropriate cost.
