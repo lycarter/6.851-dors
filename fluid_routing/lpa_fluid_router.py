@@ -6,7 +6,7 @@ import copy
 #pylint: disable=attribute-defined-outside-init
 
 
-class NodeState(lpa_star.state):
+class NodeState(lpa_star.State):
     """State subclass which defines nodes for fluid routing."""
     def set_node_lookup_dict(self, node_lookup_dict):
         self.lookup_dict = node_lookup_dict

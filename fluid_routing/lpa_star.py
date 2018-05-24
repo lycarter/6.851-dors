@@ -18,7 +18,7 @@ import priority_queue_sortedset as pq
 class PathTooLongException(Exception):
     pass
 
-class state():
+class State():
     """An arbitrary-dimension state for LPA*"""
 
     def __init__(self, pos, k):
