@@ -66,13 +66,13 @@ class FluidLPA(lpa_star.LPA):
         p_2 = s2.pos
         return sum([(p_1[i] - p_2[i])**2 for i in range(3)])**0.5
 
-    def make_node_impassable(self, impassable_node):
+    def makeNodeImpassable(self, impassable_node):
         self._impassable_nodes.add(impassable_node)
         for pos in impassable_node.pred():
             node = self.state_factory.make_or_get_state_by_pos(pos)
             self._updateVertex(node)
 
-    def make_edge_impassable(self, impassable_edge):
+    def makeEdgeImpassable(self, impassable_edge):
         self._impassable_edges.add(impassable_edge)
         for node in impassable_edge:
             self._updateVertex(node)
@@ -149,7 +149,7 @@ def test1():
     (path1, cost) = flpa.getShortestPath()
 
     flpa2 = copy.deepcopy(flpa)
-    flpa2.make_node_impassable(
+    flpa2.makeNodeImpassable(
         flpa2.state_factory.make_or_get_state_by_pos((1, 1, 1)))
 
     flpa2.computeShortestPath()
@@ -176,7 +176,7 @@ def test2():
     s_goal = fluid_state_factory.make_or_get_state_by_pos((2, 0, 0))
 
     flpa = FluidLPA(s_start, s_goal, state_lookup_dict, debug=True)
-    flpa.make_node_impassable(
+    flpa.makeNodeImpassable(
         flpa.state_factory.make_or_get_state_by_pos((1, 0, 0)))
 
     flpa.computeShortestPath()
@@ -202,7 +202,7 @@ def test3():
     lpa_lookup_dict[hash_constraints(flpa.get_constraints())] = flpa
 
     flpa2 = copy.deepcopy(flpa)
-    flpa2.make_node_impassable(
+    flpa2.makeNodeImpassable(
         flpa2.state_factory.make_or_get_state_by_pos((1, 1, 1)))
 
     flpa2.computeShortestPath()
@@ -210,7 +210,7 @@ def test3():
     lpa_lookup_dict[hash_constraints(flpa2.get_constraints())] = flpa
 
     flpa3 = copy.deepcopy(flpa)
-    flpa3.make_node_impassable(
+    flpa3.makeNodeImpassable(
         flpa3.state_factory.make_or_get_state_by_pos((1, 1, 1)))
 
     assert flpa3 in lpa_lookup_dict

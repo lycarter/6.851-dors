@@ -265,11 +265,11 @@ class LPA():
         if self.debug: print totalCost
         return (path[::-1], totalCost)
 
-    def make_node_impassable(self, pos):
+    def makeNodeImpassable(self, pos):
         """This should be overridden in derivative classes."""
         pass
 
-    def make_edge_impassable(self, edge):
+    def makeEdgeImpassable(self, edge):
         """This should be overridden in derivative classes."""
         pass
 

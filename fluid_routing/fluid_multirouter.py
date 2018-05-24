@@ -135,10 +135,10 @@ class FLPA_BFS(object):
 
         # split left
         left_flpa_list = copy.deepcopy(flpa_list)
-        left_flpa_list[flpa_index_1].make_edge_impassable(edge_1)
+        left_flpa_list[flpa_index_1].makeEdgeImpassable(edge_1)
         
         right_flpa_list = copy.deepcopy(flpa_list)
-        right_flpa_list[flpa_index_2].make_edge_impassable(edge_2)
+        right_flpa_list[flpa_index_2].makeEdgeImpassable(edge_2)
 
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
 
@@ -168,7 +168,7 @@ class FLPA_BFS(object):
             new_flpa = self._flpa_cache[h]
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
-            new_flpa.make_edge_impassable(edge)
+            new_flpa.makeEdgeImpassable(edge)
             self._flpa_cache[h] = new_flpa
         print("hashtable is %s large" % (len(self._flpa_cache),))
         flpa_list[flpa_index] = new_flpa
@@ -186,13 +186,13 @@ class FLPA_BFS(object):
         # split left
         left_flpa_list = copy.deepcopy(flpa_list)
         tmp_flpa = left_flpa_list[flpa_index_1]
-        tmp_flpa.make_node_impassable(
+        tmp_flpa.makeNodeImpassable(
             tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
 
         # split right
         right_flpa_list = copy.deepcopy(flpa_list)
         tmp_flpa = right_flpa_list[flpa_index_2]
-        tmp_flpa.make_node_impassable(
+        tmp_flpa.makeNodeImpassable(
             tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
 
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
@@ -221,7 +221,7 @@ class FLPA_BFS(object):
             new_flpa = copy.deepcopy(self._flpa_cache[h])
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
-            new_flpa.make_node_impassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))
+            new_flpa.makeNodeImpassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))
             self._flpa_cache[h] = new_flpa
         print("hashtable is %s large" % (len(self._flpa_cache),))
         flpa_list[flpa_index] = new_flpa
