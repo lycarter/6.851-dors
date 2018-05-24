@@ -200,7 +200,7 @@ class FLPA_BFS(object):
         toReturn = hash((tuple(nodes), tuple(edges)))
         return toReturn
 
-    def _queueInsert(self, l1, l2, cost):
+    def _queueInsert(self, flpa_list_1, flpa_list_2, flpa_cost):
         """Inserts l1 and l2 into the priority queue with appropriate cost.
         """
 
@@ -208,8 +208,8 @@ class FLPA_BFS(object):
         #     print self.flpa_queue
         #     raise Exception
 
-        self.flpa_queue.insert((cost, tuple(l1)))
-        self.flpa_queue.insert((cost, tuple(l2)))
+        self.flpa_queue.insert((flpa_cost, tuple(flpa_list_1)))
+        self.flpa_queue.insert((flpa_cost, tuple(flpa_list_2)))
 
 
     def findSolution(self):
