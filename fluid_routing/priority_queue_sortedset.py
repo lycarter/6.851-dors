@@ -50,7 +50,7 @@ class Queue():
 
 
     def __deepcopy__(self, memo):
-        result = queue()
+        result = Queue()
         memo[id(self)] = result
         tmpItem = self.top()
         for item in self._set:

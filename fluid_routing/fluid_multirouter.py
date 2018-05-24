@@ -149,14 +149,17 @@ class FLPA_BFS(object):
         h = self._hashConstraints(flpa_constraints)
         flpa_constraints[1].remove(edge)
         if h in self._flpa_cache:
-            print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
-            # raise Exception
+            if self.debug:
+                print("cache hit")
             new_flpa = self._flpa_cache[h]
         else:
+            if self.debug:
+                print("cache miss")
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
             new_flpa.makeEdgeImpassable(edge)
             self._flpa_cache[h] = new_flpa
-        print("hashtable is %s large" % (len(self._flpa_cache),))
+        if self.debug:
+            print("hashtable has %s elements" % (len(self._flpa_cache),))
         flpa_list[flpa_index] = new_flpa
 
         return tuple(flpa_list)
@@ -181,13 +184,17 @@ class FLPA_BFS(object):
         h = self._hashConstraints(flpa_constraints)
         flpa_constraints[0].remove(bad_node)
         if h in self._flpa_cache:
-            print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
+            if self.debug:
+                print("cache hit")
             new_flpa = copy.deepcopy(self._flpa_cache[h])
         else:
+            if self.debug:
+                print("cache miss")
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
             new_flpa.makeNodeImpassable(new_flpa.state_factory.makeOrGetStateByPos(bad_node.pos))
             self._flpa_cache[h] = new_flpa
-        print("hashtable is %s large" % (len(self._flpa_cache),))
+        if self.debug:
+            print("hashtable has %s elements" % (len(self._flpa_cache),))
         flpa_list[flpa_index] = new_flpa
 
         return tuple(flpa_list)
@@ -264,7 +271,7 @@ def test_2():
     def fluid_is_valid(pos):
         return max(pos) <= 10 and min(pos) >= 0
 
-    bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=True)
+    bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=False)
     (paths, cost) = bfs_obj.findSolution()
     print "\n\n\n"
     for path in paths:
