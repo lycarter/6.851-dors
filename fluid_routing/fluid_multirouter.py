@@ -95,7 +95,7 @@ class FLPA_BFS(object):
                 print "Solving new FLPA"
             route_flpa.computeShortestPath()
             if self.debug: print "computed shortest path"
-            (tmp_path, cost) = route_flpa.getShortestPath(debug_override=True)
+            (tmp_path, cost) = route_flpa.getShortestPath()
             if self.debug: print "got shortest path"
             if tmp_path is None:
                 if self.debug: print "path is none"
@@ -174,7 +174,7 @@ class FLPA_BFS(object):
         flpa_constraints[0].remove(node)
         if hashable_flpa_constraints in self._flpa_cache:
             print("\t\t\t\t\t\t\t\tthe queue did something!")
-            new_flpa = self._flpa_cache[hashable_flpa_constraints]
+            new_flpa = copy.deepcopy(self._flpa_cache[hashable_flpa_constraints])
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
             new_flpa.make_node_impassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))

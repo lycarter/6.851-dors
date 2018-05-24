@@ -14,6 +14,9 @@ import priority_queue as pq
 # overconsistent: g(s) > rhs(s)  --> set g(s) = rhs(s)
 # underconsistent: g(s) < rhs(s) --> set g(s) = inf
 
+class PathTooLongException(Exception):
+    pass
+
 class state():
     """An arbitrary-dimension state for LPA*"""
 
@@ -195,9 +198,8 @@ class LPA():
                 for s in u.succ():
                     self._updateVertex(s)
 
-    def getShortestPath(self, debug_override=False):
+    def getShortestPath(self):
         # Make sure to only run this after computeShortestPath
-        self.debug = debug_override
         if self.debug: print "\tgeting shortest path"
         sCur = self.sGoal
         path = [sCur]
@@ -208,6 +210,8 @@ class LPA():
             minCost = float("inf")
             sNext = None
             for sPred in sCur.pred():
+                if sPred in path:
+                    continue
                 tmpCost = self._g(sPred) + self._c(sPred, sCur)
                 if self.debug: print("\tgot a min cost of %s with a tmp cost of %s"
                     % (minCost, tmpCost))
@@ -220,6 +224,10 @@ class LPA():
                 return (None, float("inf"))
             sCur = sNext
             path.append(sCur)
+            if len(path) > 20:
+                for item in path:
+                    print item.pos
+                raise PathTooLongException
             totalCost += moveCost
 
         if self.debug: print totalCost
