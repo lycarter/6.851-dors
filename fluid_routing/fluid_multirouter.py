@@ -209,7 +209,7 @@ def test_2():
     routes = [route_main, route_cross_5, route_cross_4, route_cross_3,
               route_cross_2, route_cross_1]
 
-    routes = [route_main, route_cross_5]
+    # routes = [route_main, route_cross_5]
 
     def fluid_is_valid(pos):
         return max(pos) <= 10 and min(pos) >= 0
