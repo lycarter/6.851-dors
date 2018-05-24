@@ -222,6 +222,10 @@ class FLPA_BFS(object):
         """Inserts l1 and l2 into the priority queue with appropriate cost.
         """
 
+        # if len(self.flpa_queue) >= 4:
+        #     print self.flpa_queue
+        #     raise Exception
+
         self.flpa_queue.insert((cost, tuple(l1)))
         self.flpa_queue.insert((cost, tuple(l2)))
 

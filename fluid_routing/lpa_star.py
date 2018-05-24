@@ -51,10 +51,16 @@ class state():
             else:
                 first = other.k[0] - self.k[0]
 
-            if other.k[1] == float("inf") and self.k[1] == float("inf"):
-                second = 0
-            else:
-                second = other.k[1] - self.k[1]
+            if first == 0:
+                if other.k[1] == float("inf") and self.k[1] == float("inf"):
+                    second = 0
+                else:
+                    second = other.k[1] - self.k[1]
+                if second == 0:
+                    if other.pos > self.pos:
+                        return 1
+                    else:
+                        return -1
 
             if first != 0:
                 return first
@@ -251,6 +257,6 @@ class LPA():
     #         return NotImplemented
     # def __ne__(self, other):
     #     return not self.__eq__(other)
-
+    #
     # def __hash__(self):
     #     return hash((tuple(self._impassable_nodes), tuple(self._impassable_edges)))
