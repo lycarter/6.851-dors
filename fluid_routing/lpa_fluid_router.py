@@ -14,9 +14,6 @@ class NodeState(lpa_star.state):
     def set_valid_pos_lookup_func(self, pos_f):
         self.is_valid_pos_f = pos_f
 
-    def set_state_factory(self, state_factory):
-        self.state_factory = state_factory
-
     def pred(self):
         preds = []
         for i in range(-1, 2):
@@ -25,15 +22,20 @@ class NodeState(lpa_star.state):
                     if (i, j, k) == (0, 0, 0):
                         continue
                     possible_pos = (self.pos[0] + i, self.pos[1] + j, self.pos[2] + k)
-                    state = self.state_factory.make_or_get_state_by_pos(possible_pos)
-                    if state is not None:
-                        preds.append(state)
+                    if self.is_valid_pos_f(possible_pos):
+                        preds.append(possible_pos)
         return preds
 
     def succ(self):
         return self.pred()
 
+    def __copy__(self):
+        result = NodeState(self.pos[:], self.k[:])
+        result.set_valid_pos_lookup_func(self.is_valid_pos_f)
+        return result
+
     def __deepcopy__(self, memo):
+        # raise Exception
         result = NodeState(self.pos[:], self.k[:])
         memo[id(self)] = result
         result.set_node_lookup_dict(copy.deepcopy(self.lookup_dict, memo))
@@ -43,7 +45,8 @@ class NodeState(lpa_star.state):
         # when setting a node as inadmissable
         result.set_valid_pos_lookup_func(self.is_valid_pos_f)
 
-        result.set_state_factory(copy.deepcopy(self.state_factory, memo))
+        # this line below is the issue. NodeState's that are related to each other should keep the same state_factory
+        # result.set_state_factory(copy.deepcopy(self.state_factory, memo))
         return result
 
 
@@ -65,7 +68,8 @@ class FluidLPA(lpa_star.LPA):
 
     def make_node_impassable(self, impassable_node):
         self._impassable_nodes.add(impassable_node)
-        for node in impassable_node.pred():
+        for pos in impassable_node.pred():
+            node = self.state_factory.make_or_get_state_by_pos(pos)
             self._updateVertex(node)
 
     def make_edge_impassable(self, impassable_edge):
@@ -84,6 +88,11 @@ class StateFactory(object):
         self.debug = debug
 
     def make_or_get_state_by_pos(self, pos):
+        # if pos == (1,4,1):
+        #     self.debug = True
+        #     print("i am %s" % (self,))
+        # else:
+        #     self.debug = False
         """Looks up a position in the dictionary, returns the state if the pos
         exists in the dictionary. Creates the state and adds it to the dict
         if it does not already exist, then returns it."""
@@ -92,7 +101,7 @@ class StateFactory(object):
         tmp_state = self.state_class(pos, (float("inf"), float("inf")))
         if tmp_state in self.node_lookup_dict:
             if self.debug:
-                print "found state in dict"
+                print "found state in dict: %s" % (self.node_lookup_dict[tmp_state],)
             return self.node_lookup_dict[tmp_state]
         elif self.valid_pos_lookup_func(pos):
             if self.debug:
@@ -100,12 +109,17 @@ class StateFactory(object):
             new_s = self.state_class(pos, (float("inf"), float("inf")))
             new_s.set_node_lookup_dict(self.node_lookup_dict)
             new_s.set_valid_pos_lookup_func(self.valid_pos_lookup_func)
-            new_s.set_state_factory(self)
             self.node_lookup_dict[new_s] = new_s
             return new_s
         else:
             # The requested state is not a valid position.
             return None
+
+    def update_state(self, new_state):
+        # print("i am %s" % (self,))
+        # print("updating state %s" % (new_state,))
+        self.node_lookup_dict[new_state] = new_state
+        # print("it's now %s" % (self.node_lookup_dict[new_state],))
 
 
 def fluid_is_valid(pos):
@@ -126,7 +140,7 @@ def test():
     s_start = fluid_state_factory.make_or_get_state_by_pos((0, 0, 0))
     s_goal = fluid_state_factory.make_or_get_state_by_pos((2, 2, 2))
 
-    flpa = FluidLPA(s_start, s_goal, state_lookup_dict)
+    flpa = FluidLPA(s_start, s_goal, fluid_state_factory, state_lookup_dict)
 
     flpa.computeShortestPath()
     (path, cost) = flpa.getShortestPath()

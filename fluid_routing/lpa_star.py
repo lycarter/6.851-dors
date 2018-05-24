@@ -1,6 +1,7 @@
 """LPA* implementation in Python."""
 
-import priority_queue as pq
+
+import priority_queue_sortedset as pq
 
 # c: cost
 # g*(s): dist from start to s
@@ -98,7 +99,7 @@ class state():
 
 
 class LPA():
-    def __init__(self, sStart, sGoal, stateDict, debug=False):
+    def __init__(self, sStart, sGoal, state_factory, stateDict, debug=False):
         """Initializes LPA* class.
 
         Args:
@@ -125,7 +126,7 @@ class LPA():
         self.sGoal = sGoal
         self.sStart = sStart
         self.debug = debug
-        self.state_factory = sStart.state_factory
+        self.state_factory = state_factory
 
         self._rhs_dict[sStart] = 0
 
@@ -175,15 +176,36 @@ class LPA():
         pass
 
     def _updateVertex(self, u):
+        debug = False
+        # if u.pos == (1, 4, 1):
+        #     debug = True
+        #     print('\n\n\n\ninserting %s' % (u,))
+        #     print("i am %s" % self)
         if u != self.sStart:
             # Update the estimate with lowest cost from predecessors
-            self._rhs_dict[u] = min([self._g(s) + self._c(s, u) for s in u.pred()])
+            preds = [self.state_factory.make_or_get_state_by_pos(pos) for pos in u.pred()]
+            self._rhs_dict[u] = min([self._g(s) + self._c(s, u) for s in preds])
         if u in self._U:
+            if debug:
+                print("attempting to remove it")
             self._U.remove(u)
+            if debug:
+                print("after remove")
+                print("\n".join([str(i) for i in sorted(self._U._set)]))
+                
         if self._g(u) != self._rhs(u):
+            if debug:
+                print("inserting it")
             u.k = self._calculateKey(u)
             self._U.insert(u)
+            if debug:
+                print("actually inserting %s" % (u,))
             self.stateDict[u] = u
+            self.state_factory.update_state(u)
+            if debug:
+                print("after insert")
+                print("\n".join([str(i) for i in sorted(self._U._set)]))
+
 
     def computeShortestPath(self):
         while (self._U.topKey() < self._calculateKey(self.sGoal) or
@@ -194,14 +216,17 @@ class LPA():
             if self.debug: self._printGRHS()
             if self._g(u) > self._rhs(u):
                 self._g_dict[u] = self._rhs(u)
-                for s in u.succ():
+                for pos in u.succ():
+                    s = self.state_factory.make_or_get_state_by_pos(pos)
                     if self.debug: print "updating %s" % (s.pos,)
+                    # print s
                     self._updateVertex(s)
                     if self.debug: self._printGRHS()
             else:
                 self._g_dict[u] = float("inf")
                 # self._updateVertex(u)
-                for s in u.succ():
+                for pos in u.succ():
+                    s = self.state_factory.make_or_get_state_by_pos(pos)
                     self._updateVertex(s)
 
     def getShortestPath(self):
@@ -215,7 +240,8 @@ class LPA():
             if self.debug: print "\tfinding new node to add"
             minCost = float("inf")
             sNext = None
-            for sPred in sCur.pred():
+            for sPredPos in sCur.pred():
+                sPred = self.state_factory.make_or_get_state_by_pos(sPredPos)
                 if sPred in path:
                     continue
                 tmpCost = self._g(sPred) + self._c(sPred, sCur)
@@ -250,13 +276,22 @@ class LPA():
     def get_constraints(self):
         return (self._impassable_nodes, self._impassable_edges)
 
+    def print_constraints(self):
+        print("Impassable nodes:")
+        for node in self._impassable_nodes:
+            print "\t%s" % (node.pos,)
+
+        print("\nImpassable edges:")
+        for edge in self._impassable_edges:
+            print "\t%s--%s" % (edge[0], edge[1])
+
     # def __eq__(self, other):
     #     if isinstance(self, other.__class__):
-    #         return self._impassable_edges == other._impassable_edges  self._impassable_nodes == other._impassable_nodes
+    #         return self._impassable_edges == other._impassable_edges and self._impassable_nodes == other._impassable_nodes
+
     #     else:
     #         return NotImplemented
     # def __ne__(self, other):
     #     return not self.__eq__(other)
-    #
     # def __hash__(self):
     #     return hash((tuple(self._impassable_nodes), tuple(self._impassable_edges)))

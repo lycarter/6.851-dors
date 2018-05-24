@@ -5,7 +5,10 @@ import numpy as np
 import lpa_fluid_router as flpa
 import random
 import lpa_math
-import priority_queue as pq
+
+import priority_queue_sortedset as pq
+
+random.seed(1)
 
 class FLPA_BFS(object):
     """BFS Python implementation."""
@@ -30,7 +33,7 @@ class FLPA_BFS(object):
             s_start = fluid_state_factory.make_or_get_state_by_pos(route[0])
             s_goal = fluid_state_factory.make_or_get_state_by_pos(route[1])
 
-            route_flpa = flpa.FluidLPA(s_start, s_goal, state_lookup_dict)
+            route_flpa = flpa.FluidLPA(s_start, s_goal, fluid_state_factory, state_lookup_dict)
 
             flpa_list.append(route_flpa)
 
@@ -92,7 +95,8 @@ class FLPA_BFS(object):
         total_flpa_cost = 0
         for route_flpa in flpa_list:
             if self.debug:
-                print "Solving new FLPA"
+                print "Solving new FLPA: from %s to %s" % (route_flpa.sStart, route_flpa.sGoal)
+                # route_flpa.print_constraints()
             route_flpa.computeShortestPath()
             if self.debug: print "computed shortest path"
             (tmp_path, cost) = route_flpa.getShortestPath()
@@ -247,8 +251,6 @@ class FLPA_BFS(object):
 
 
 
-
-
 def test_1():
     """Tests multi-object fluid routing."""
     route_1 = ((0, 0, 1), (2, 2, 1))
@@ -278,6 +280,8 @@ def test_2():
 
     routes = [route_main, route_cross_5, route_cross_4, route_cross_3,
               route_cross_2, route_cross_1]
+
+    # routes = [route_main, route_cross_5]
 
     def fluid_is_valid(pos):
         return max(pos) <= 10 and min(pos) >= 0
