@@ -56,3 +56,10 @@ class queue():
     def printQueue(self):
         for u in self._U:
             print u
+
+    def __str__(self):
+        toReturn = "note: this destroys the queue\n\n"
+        while len(self._U) > 0:
+            u = self.pop()
+            toReturn += str(u) + "\n"
+        return toReturn
