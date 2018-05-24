@@ -6,7 +6,7 @@ import lpa_fluid_router as flpa
 import random
 import lpa_math
 
-import priority_queue_sortedset as pq
+import priority_queue as pq
 
 random.seed(1)
 
@@ -147,9 +147,9 @@ class FLPA_BFS(object):
                          edge_2, cost):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
-        left_flpa_list = list(copy.copy(flpa_list))
+        left_flpa_list = list(flpa_list)
         # second_flpa_list = list(copy.deepcopy(flpa_list))
-        right_flpa_list = list(copy.copy(flpa_list))
+        right_flpa_list = list(flpa_list)
 
         left_flpa_list = self._split_single_edge(left_flpa_list, flpa_index_1, edge_1)
         # second_flpa_list = self._split_single_edge(second_flpa_list, flpa_index_1, edge_1)
@@ -203,8 +203,8 @@ class FLPA_BFS(object):
         """Splits two routes at bad_pos and appends the new search objects to
         the flpa_queue."""
 
-        left_flpa_list = list(copy.copy(flpa_list))
-        right_flpa_list = list(copy.copy(flpa_list))
+        left_flpa_list = list(flpa_list)
+        right_flpa_list = list(flpa_list)
 
         left_flpa_list = self._split_single_pos(left_flpa_list, flpa_index_1, bad_node)
         right_flpa_list = self._split_single_pos(right_flpa_list, flpa_index_2, bad_node)
