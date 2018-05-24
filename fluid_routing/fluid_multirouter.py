@@ -148,9 +148,11 @@ class FLPA_BFS(object):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
         left_flpa_list = list(copy.copy(flpa_list))
+        # second_flpa_list = list(copy.deepcopy(flpa_list))
         right_flpa_list = list(copy.copy(flpa_list))
 
         left_flpa_list = self._split_single_edge(left_flpa_list, flpa_index_1, edge_1)
+        # second_flpa_list = self._split_single_edge(second_flpa_list, flpa_index_1, edge_1)
         right_flpa_list = self._split_single_edge(right_flpa_list, flpa_index_2, edge_2)
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
 
@@ -161,8 +163,8 @@ class FLPA_BFS(object):
         h = self.hash_constraints(flpa_constraints)
         flpa_constraints[1].remove(edge)
         if h in self._flpa_cache:
-            print("\t\t\t\t\t\t\t\tthe queue did something!")
-            raise Exception
+            print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
+            # raise Exception
             new_flpa = self._flpa_cache[h]
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
@@ -215,9 +217,8 @@ class FLPA_BFS(object):
         h = self.hash_constraints(flpa_constraints)
         flpa_constraints[0].remove(node)
         if h in self._flpa_cache:
-            print("\t\t\t\t\t\t\t\tthe queue did something!")
+            print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
             new_flpa = copy.deepcopy(self._flpa_cache[h])
-            raise Exception
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
             new_flpa.make_node_impassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))
@@ -231,7 +232,9 @@ class FLPA_BFS(object):
     def hash_constraints(constraints):
         nodes = (node.pos for node in sorted(constraints[0]))
         edges = ((edge[0].pos, edge[1].pos) for edge in sorted(constraints[1]))
-        return hash((nodes, edges))
+        # print((tuple(nodes), tuple(edges)))
+        toReturn = hash((tuple(nodes), tuple(edges)))
+        return toReturn
 
     def _queue_insert(self, l1, l2, cost):
         """Inserts l1 and l2 into the priority queue with appropriate cost.
