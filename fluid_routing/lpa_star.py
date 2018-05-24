@@ -232,13 +232,13 @@ class LPA():
         """This should be overridden in derivative classes."""
         pass
 
-    def __eq__(self, other):
-        if isinstance(self, other.__class__):
-            return self._impassable_edges == other._impassable_edges && self._impassable_nodes == other._impassable_nodes
-        else:
-            return NotImplemented
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    # def __eq__(self, other):
+    #     if isinstance(self, other.__class__):
+    #         return self._impassable_edges == other._impassable_edges && self._impassable_nodes == other._impassable_nodes
+    #     else:
+    #         return NotImplemented
+    # def __ne__(self, other):
+    #     return not self.__eq__(other)
 
-    def __hash__(self):
-        return hash((tuple(self._impassable_nodes), tuple(self._impassable_edges)))
+    # def __hash__(self):
+    #     return hash((tuple(self._impassable_nodes), tuple(self._impassable_edges)))
