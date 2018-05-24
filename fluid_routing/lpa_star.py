@@ -1,6 +1,6 @@
 """LPA* implementation in Python."""
 
-import priority_queue as pq
+import priority_queue_treap_pypi as pq
 
 # c: cost
 # g*(s): dist from start to s
@@ -48,10 +48,16 @@ class state():
             else:
                 first = other.k[0] - self.k[0]
 
-            if other.k[1] == float("inf") and self.k[1] == float("inf"):
-                second = 0
-            else:
-                second = other.k[1] - self.k[1]
+            if first == 0:
+                if other.k[1] == float("inf") and self.k[1] == float("inf"):
+                    second = 0
+                else:
+                    second = other.k[1] - self.k[1]
+                if second == 0:
+                    if other.pos > self.pos:
+                        return 1
+                    else:
+                        return -1
 
             if first != 0:
                 return first
