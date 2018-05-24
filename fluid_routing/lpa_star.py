@@ -183,7 +183,7 @@ class LPA():
         #     print("i am %s" % self)
         if u != self.sStart:
             # Update the estimate with lowest cost from predecessors
-            preds = [self.state_factory.make_or_get_state_by_pos(pos) for pos in u.pred()]
+            preds = [self.state_factory.makeOrGetStateByPos(pos) for pos in u.pred()]
             self._rhs_dict[u] = min([self._g(s) + self._c(s, u) for s in preds])
         if u in self._U:
             if debug:
@@ -201,7 +201,7 @@ class LPA():
             if debug:
                 print("actually inserting %s" % (u,))
             self.stateDict[u] = u
-            self.state_factory.update_state(u)
+            self.state_factory.updateState(u)
             if debug:
                 print("after insert")
                 print("\n".join([str(i) for i in sorted(self._U._set)]))
@@ -217,7 +217,7 @@ class LPA():
             if self._g(u) > self._rhs(u):
                 self._g_dict[u] = self._rhs(u)
                 for pos in u.succ():
-                    s = self.state_factory.make_or_get_state_by_pos(pos)
+                    s = self.state_factory.makeOrGetStateByPos(pos)
                     if self.debug: print "updating %s" % (s.pos,)
                     # print s
                     self._updateVertex(s)
@@ -226,7 +226,7 @@ class LPA():
                 self._g_dict[u] = float("inf")
                 # self._updateVertex(u)
                 for pos in u.succ():
-                    s = self.state_factory.make_or_get_state_by_pos(pos)
+                    s = self.state_factory.makeOrGetStateByPos(pos)
                     self._updateVertex(s)
 
     def getShortestPath(self):
@@ -241,7 +241,7 @@ class LPA():
             minCost = float("inf")
             sNext = None
             for sPredPos in sCur.pred():
-                sPred = self.state_factory.make_or_get_state_by_pos(sPredPos)
+                sPred = self.state_factory.makeOrGetStateByPos(sPredPos)
                 if sPred in path:
                     continue
                 tmpCost = self._g(sPred) + self._c(sPred, sCur)
@@ -273,10 +273,10 @@ class LPA():
         """This should be overridden in derivative classes."""
         pass
 
-    def get_constraints(self):
+    def getConstraints(self):
         return (self._impassable_nodes, self._impassable_edges)
 
-    def print_constraints(self):
+    def printConstraints(self):
         print("Impassable nodes:")
         for node in self._impassable_nodes:
             print "\t%s" % (node.pos,)

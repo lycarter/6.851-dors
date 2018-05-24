@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def closest_distance_between_lines(a0, a1, b0, b1, clampAll=True,
+def closestDistanceBetweenLines(a0, a1, b0, b1, clampAll=True,
                                    clampA0=False, clampA1=False,
                                    clampB0=False, clampB1=False):
 

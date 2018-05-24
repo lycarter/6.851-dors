@@ -30,8 +30,8 @@ class FLPA_BFS(object):
             state_lookup_dict = {}
             fluid_state_factory = flpa.StateFactory(
                 flpa.NodeState, state_lookup_dict, valid_region_func)
-            s_start = fluid_state_factory.make_or_get_state_by_pos(route[0])
-            s_goal = fluid_state_factory.make_or_get_state_by_pos(route[1])
+            s_start = fluid_state_factory.makeOrGetStateByPos(route[0])
+            s_goal = fluid_state_factory.makeOrGetStateByPos(route[1])
 
             route_flpa = flpa.FluidLPA(s_start, s_goal, fluid_state_factory, state_lookup_dict)
 
@@ -41,20 +41,20 @@ class FLPA_BFS(object):
         self.flpa_queue.insert((-1,tuple(flpa_list)))
         self._flpa_cache = {}
 
-    def _check_edge_collision(self, edge_1, edge_2):
+    def _checkEdgeCollision(self, edge_1, edge_2):
         a0 = np.array(edge_1[0].pos)
         a1 = np.array(edge_1[1].pos)
         b0 = np.array(edge_2[0].pos)
         b1 = np.array(edge_2[1].pos)
-        if lpa_math.closest_distance_between_lines(a0, a1, b0, b1) < 0.8:
+        if lpa_math.closestDistanceBetweenLines(a0, a1, b0, b1) < 0.8:
             if self.debug:
                 print ('Edge collision detected, distance is %s' %
-                    lpa_math.closest_distance_between_lines(a0, a1, b0, b1))
+                    lpa_math.closestDistanceBetweenLines(a0, a1, b0, b1))
             return True
         return False
 
 
-    def _check_collision_free(self, flpa_list, flpa_index_1, flpa_index_2,
+    def _checkCollisionFree(self, flpa_list, flpa_index_1, flpa_index_2,
                               path_1, path_2, flpa_cost):
         """Checks that path_1 and path_2 are collision-free. If they are not,
         calls a split method appropriately and returns False."""
@@ -64,7 +64,7 @@ class FLPA_BFS(object):
             if node in path_2:
                 if self.debug:
                     print "node overlap conflict at %s" % (node.pos,)
-                self._split_flpa_pos(flpa_list, flpa_index_1, flpa_index_2,
+                self._splitFlpaPos(flpa_list, flpa_index_1, flpa_index_2,
                                      node, flpa_cost)
                 return False
 
@@ -73,12 +73,12 @@ class FLPA_BFS(object):
         edges_2 = [(path_2[i], path_2[i+1]) for i in range(len(path_2) - 1)]
         for edge_1 in edges_1:
             for edge_2 in edges_2:
-                if self._check_edge_collision(edge_1, edge_2):
+                if self._checkEdgeCollision(edge_1, edge_2):
                     if self.debug:
                         print ("edge conflict at (%s, %s), (%s, %s)" % 
                             (edge_1[0].pos, edge_1[1].pos, edge_2[0].pos,
                              edge_2[1].pos))
-                    self._split_flpa_edge(flpa_list, flpa_index_1, flpa_index_2,
+                    self._splitFlpaEdge(flpa_list, flpa_index_1, flpa_index_2,
                                           edge_1, edge_2, flpa_cost)
                     return False
 
@@ -86,7 +86,7 @@ class FLPA_BFS(object):
         return True
 
 
-    def _process_flpa_list(self, flpa_list):
+    def _processFlpaList(self, flpa_list):
         """Computes the shortest path for all of the FLPA's in flpa_list. Splits
         on a random bad position and returns None if the flpa_list is
         unsolvable. Returns a list of paths if the flpa_list is solvable."""
@@ -96,7 +96,7 @@ class FLPA_BFS(object):
         for route_flpa in flpa_list:
             if self.debug:
                 print "Solving new FLPA: from %s to %s" % (route_flpa.sStart, route_flpa.sGoal)
-                # route_flpa.print_constraints()
+                # route_flpa.printConstraints()
             route_flpa.computeShortestPath()
             if self.debug: print "computed shortest path"
             (tmp_path, cost) = route_flpa.getShortestPath()
@@ -119,7 +119,7 @@ class FLPA_BFS(object):
                     print node.pos
         for i in range(len(paths)):
             for j in range(i+1, len(paths)):
-                if self._check_collision_free(flpa_list, i, j, paths[i],
+                if self._checkCollisionFree(flpa_list, i, j, paths[i],
                                               paths[j], total_flpa_cost):
                     continue
                 else:
@@ -128,22 +128,8 @@ class FLPA_BFS(object):
         if self.debug: print "actually returning something"
         return (paths, total_flpa_cost)
 
-    def _split_flpa_edge_old(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
-                         edge_2, cost):
-        """Splits two routes at edge_1 and edge_2 respectively and appends the
-        new search objects to the flpa_queue."""
 
-        # split left
-        left_flpa_list = copy.deepcopy(flpa_list)
-        left_flpa_list[flpa_index_1].makeEdgeImpassable(edge_1)
-        
-        right_flpa_list = copy.deepcopy(flpa_list)
-        right_flpa_list[flpa_index_2].makeEdgeImpassable(edge_2)
-
-        self._queue_insert(left_flpa_list, right_flpa_list, cost)
-
-
-    def _split_flpa_edge(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
+    def _splitFlpaEdge(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
                          edge_2, cost):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
@@ -151,16 +137,16 @@ class FLPA_BFS(object):
         # second_flpa_list = list(copy.deepcopy(flpa_list))
         right_flpa_list = list(flpa_list)
 
-        left_flpa_list = self._split_single_edge(left_flpa_list, flpa_index_1, edge_1)
-        # second_flpa_list = self._split_single_edge(second_flpa_list, flpa_index_1, edge_1)
-        right_flpa_list = self._split_single_edge(right_flpa_list, flpa_index_2, edge_2)
-        self._queue_insert(left_flpa_list, right_flpa_list, cost)
+        left_flpa_list = self._splitSingleEdge(left_flpa_list, flpa_index_1, edge_1)
+        # second_flpa_list = self._splitSingleEdge(second_flpa_list, flpa_index_1, edge_1)
+        right_flpa_list = self._splitSingleEdge(right_flpa_list, flpa_index_2, edge_2)
+        self._queueInsert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _split_single_edge(self, flpa_list, flpa_index, edge):
-        flpa_constraints = flpa_list[flpa_index].get_constraints() # (node, edge)
+    def _splitSingleEdge(self, flpa_list, flpa_index, edge):
+        flpa_constraints = flpa_list[flpa_index].getConstraints() # (node, edge)
         flpa_constraints[1].add(edge)
-        h = self.hash_constraints(flpa_constraints)
+        h = self._hashConstraints(flpa_constraints)
         flpa_constraints[1].remove(edge)
         if h in self._flpa_cache:
             print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
@@ -175,30 +161,8 @@ class FLPA_BFS(object):
 
         return tuple(flpa_list)
 
-    def _split_flpa_pos_old(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
-                        cost):
-        """Splits two routes at bad_pos and appends the new search objects to
-        the flpa_queue."""
 
-        print bad_pos
-        bad_pos = bad_node.pos
-
-        # split left
-        left_flpa_list = copy.deepcopy(flpa_list)
-        tmp_flpa = left_flpa_list[flpa_index_1]
-        tmp_flpa.makeNodeImpassable(
-            tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
-
-        # split right
-        right_flpa_list = copy.deepcopy(flpa_list)
-        tmp_flpa = right_flpa_list[flpa_index_2]
-        tmp_flpa.makeNodeImpassable(
-            tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
-
-        self._queue_insert(left_flpa_list, right_flpa_list, cost)
-
-
-    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
+    def _splitFlpaPos(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
                         cost):
         """Splits two routes at bad_pos and appends the new search objects to
         the flpa_queue."""
@@ -206,22 +170,22 @@ class FLPA_BFS(object):
         left_flpa_list = list(flpa_list)
         right_flpa_list = list(flpa_list)
 
-        left_flpa_list = self._split_single_pos(left_flpa_list, flpa_index_1, bad_node)
-        right_flpa_list = self._split_single_pos(right_flpa_list, flpa_index_2, bad_node)
-        self._queue_insert(left_flpa_list, right_flpa_list, cost)
+        left_flpa_list = self._splitSinglePos(left_flpa_list, flpa_index_1, bad_node)
+        right_flpa_list = self._splitSinglePos(right_flpa_list, flpa_index_2, bad_node)
+        self._queueInsert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _split_single_pos(self, flpa_list, flpa_index, node):
-        flpa_constraints = flpa_list[flpa_index].get_constraints() # (node, edge)
+    def _splitSinglePos(self, flpa_list, flpa_index, node):
+        flpa_constraints = flpa_list[flpa_index].getConstraints() # (node, edge)
         flpa_constraints[0].add(node)
-        h = self.hash_constraints(flpa_constraints)
+        h = self._hashConstraints(flpa_constraints)
         flpa_constraints[0].remove(node)
         if h in self._flpa_cache:
             print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
             new_flpa = copy.deepcopy(self._flpa_cache[h])
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
-            new_flpa.makeNodeImpassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))
+            new_flpa.makeNodeImpassable(new_flpa.state_factory.makeOrGetStateByPos(node.pos))
             self._flpa_cache[h] = new_flpa
         print("hashtable is %s large" % (len(self._flpa_cache),))
         flpa_list[flpa_index] = new_flpa
@@ -229,14 +193,14 @@ class FLPA_BFS(object):
         return tuple(flpa_list)
 
     @staticmethod
-    def hash_constraints(constraints):
+    def _hashConstraints(constraints):
         nodes = (node.pos for node in sorted(constraints[0]))
         edges = ((edge[0].pos, edge[1].pos) for edge in sorted(constraints[1]))
         # print((tuple(nodes), tuple(edges)))
         toReturn = hash((tuple(nodes), tuple(edges)))
         return toReturn
 
-    def _queue_insert(self, l1, l2, cost):
+    def _queueInsert(self, l1, l2, cost):
         """Inserts l1 and l2 into the priority queue with appropriate cost.
         """
 
@@ -248,7 +212,7 @@ class FLPA_BFS(object):
         self.flpa_queue.insert((cost, tuple(l2)))
 
 
-    def find_solution(self):
+    def findSolution(self):
         minCost = float("inf")
         best = None
         while minCost > self.flpa_queue.topKey()[0]:
@@ -256,7 +220,7 @@ class FLPA_BFS(object):
             if self.debug:
                 print("Starting new FLPA. The current queue length is %s" %
                       len(self.flpa_queue))
-            (paths, totalcost) = self._process_flpa_list(tmp_flpa_list)
+            (paths, totalcost) = self._processFlpaList(tmp_flpa_list)
             minCost = min(minCost, totalcost)
             if minCost == totalcost:
                 best = paths
@@ -276,7 +240,7 @@ def test_1():
 
     bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=True)
 
-    (paths, cost) = bfs_obj.find_solution()
+    (paths, cost) = bfs_obj.findSolution()
     print "\n\n\n"
     for path in paths:
         for state in path:
@@ -301,7 +265,7 @@ def test_2():
         return max(pos) <= 10 and min(pos) >= 0
 
     bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=True)
-    (paths, cost) = bfs_obj.find_solution()
+    (paths, cost) = bfs_obj.findSolution()
     print "\n\n\n"
     for path in paths:
         for state in path:

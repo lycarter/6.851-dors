@@ -65,15 +65,6 @@ class queue():
         result = queue()
         memo[id(self)] = result
         tmpItem = self.top()
-        # if isinstance(tmpItem, NodeState):
-        #     new_state_factory = copy.deepcopy(tmpItem.state_factory, memo)
-        #     new_node_lookup_dict = copy.deepcopy(tmpItem.new_node_lookup_dict, memo)
-        #     for item in self._set:
-        #         newItem = copy.copy(item)
-        #         newItem.set_node_lookup_dict(new_node_lookup_dict)
-        #         newItem.set_state_factory(new_state_factory)
-        #         result.insert(newItem)
-        # else:
         for item in self._set:
             result.insert(copy.deepcopy(item, memo))
         return result

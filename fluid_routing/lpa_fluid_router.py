@@ -8,10 +8,10 @@ import copy
 
 class NodeState(lpa_star.State):
     """State subclass which defines nodes for fluid routing."""
-    def set_node_lookup_dict(self, node_lookup_dict):
+    def setNodeLookupDict(self, node_lookup_dict):
         self.lookup_dict = node_lookup_dict
 
-    def set_valid_pos_lookup_func(self, pos_f):
+    def setValidPosLookupFunc(self, pos_f):
         self.is_valid_pos_f = pos_f
 
     def pred(self):
@@ -31,19 +31,19 @@ class NodeState(lpa_star.State):
 
     def __copy__(self):
         result = NodeState(self.pos[:], self.k[:])
-        result.set_valid_pos_lookup_func(self.is_valid_pos_f)
+        result.setValidPosLookupFunc(self.is_valid_pos_f)
         return result
 
     def __deepcopy__(self, memo):
         # raise Exception
         result = NodeState(self.pos[:], self.k[:])
         memo[id(self)] = result
-        result.set_node_lookup_dict(copy.deepcopy(self.lookup_dict, memo))
+        result.setNodeLookupDict(copy.deepcopy(self.lookup_dict, memo))
 
         # This does not have to be deepcopy'd, because the same region is
         # still valid for all copied objects. Only the cost function is updated
         # when setting a node as inadmissable
-        result.set_valid_pos_lookup_func(self.is_valid_pos_f)
+        result.setValidPosLookupFunc(self.is_valid_pos_f)
 
         # this line below is the issue. NodeState's that are related to each other should keep the same state_factory
         # result.set_state_factory(copy.deepcopy(self.state_factory, memo))
@@ -69,7 +69,7 @@ class FluidLPA(lpa_star.LPA):
     def makeNodeImpassable(self, impassable_node):
         self._impassable_nodes.add(impassable_node)
         for pos in impassable_node.pred():
-            node = self.state_factory.make_or_get_state_by_pos(pos)
+            node = self.state_factory.makeOrGetStateByPos(pos)
             self._updateVertex(node)
 
     def makeEdgeImpassable(self, impassable_edge):
@@ -87,7 +87,7 @@ class StateFactory(object):
         self.valid_pos_lookup_func = valid_pos_lookup_func
         self.debug = debug
 
-    def make_or_get_state_by_pos(self, pos):
+    def makeOrGetStateByPos(self, pos):
         # if pos == (1,4,1):
         #     self.debug = True
         #     print("i am %s" % (self,))
@@ -107,15 +107,15 @@ class StateFactory(object):
             if self.debug:
                 print "didn't find state, making new one"
             new_s = self.state_class(pos, (float("inf"), float("inf")))
-            new_s.set_node_lookup_dict(self.node_lookup_dict)
-            new_s.set_valid_pos_lookup_func(self.valid_pos_lookup_func)
+            new_s.setNodeLookupDict(self.node_lookup_dict)
+            new_s.setValidPosLookupFunc(self.valid_pos_lookup_func)
             self.node_lookup_dict[new_s] = new_s
             return new_s
         else:
             # The requested state is not a valid position.
             return None
 
-    def update_state(self, new_state):
+    def updateState(self, new_state):
         # print("i am %s" % (self,))
         # print("updating state %s" % (new_state,))
         self.node_lookup_dict[new_state] = new_state
@@ -137,8 +137,8 @@ def test1():
     fluid_state_factory = StateFactory(NodeState, state_lookup_dict,
                                        fluid_is_valid, debug=False)
 
-    s_start = fluid_state_factory.make_or_get_state_by_pos((0, 0, 0))
-    s_goal = fluid_state_factory.make_or_get_state_by_pos((2, 2, 2))
+    s_start = fluid_state_factory.makeOrGetStateByPos((0, 0, 0))
+    s_goal = fluid_state_factory.makeOrGetStateByPos((2, 2, 2))
 
     flpa = FluidLPA(s_start, s_goal, fluid_state_factory, state_lookup_dict)
 
@@ -150,7 +150,7 @@ def test1():
 
     flpa2 = copy.deepcopy(flpa)
     flpa2.makeNodeImpassable(
-        flpa2.state_factory.make_or_get_state_by_pos((1, 1, 1)))
+        flpa2.state_factory.makeOrGetStateByPos((1, 1, 1)))
 
     flpa2.computeShortestPath()
     assert path1 != flpa2.getShortestPath()[0]
@@ -172,12 +172,12 @@ def test2():
     fluid_state_factory = StateFactory(NodeState, state_lookup_dict,
                                        fluid_is_valid_2, debug=False)
 
-    s_start = fluid_state_factory.make_or_get_state_by_pos((0, 0, 0))
-    s_goal = fluid_state_factory.make_or_get_state_by_pos((2, 0, 0))
+    s_start = fluid_state_factory.makeOrGetStateByPos((0, 0, 0))
+    s_goal = fluid_state_factory.makeOrGetStateByPos((2, 0, 0))
 
     flpa = FluidLPA(s_start, s_goal, state_lookup_dict, debug=True)
     flpa.makeNodeImpassable(
-        flpa.state_factory.make_or_get_state_by_pos((1, 0, 0)))
+        flpa.state_factory.makeOrGetStateByPos((1, 0, 0)))
 
     flpa.computeShortestPath()
     print "computed shortest path"
@@ -192,26 +192,26 @@ def test3():
     fluid_state_factory = StateFactory(NodeState, state_lookup_dict,
                                        fluid_is_valid, debug=False)
 
-    s_start = fluid_state_factory.make_or_get_state_by_pos((0, 0, 0))
-    s_goal = fluid_state_factory.make_or_get_state_by_pos((2, 2, 2))
+    s_start = fluid_state_factory.makeOrGetStateByPos((0, 0, 0))
+    s_goal = fluid_state_factory.makeOrGetStateByPos((2, 2, 2))
 
     flpa = FluidLPA(s_start, s_goal, fluid_state_factory, state_lookup_dict)
 
     flpa.computeShortestPath()
     (path1, cost) = flpa.getShortestPath()
-    lpa_lookup_dict[hash_constraints(flpa.get_constraints())] = flpa
+    lpa_lookup_dict[_hashConstraints(flpa.getConstraints())] = flpa
 
     flpa2 = copy.deepcopy(flpa)
     flpa2.makeNodeImpassable(
-        flpa2.state_factory.make_or_get_state_by_pos((1, 1, 1)))
+        flpa2.state_factory.makeOrGetStateByPos((1, 1, 1)))
 
     flpa2.computeShortestPath()
     assert path1 != flpa2.getShortestPath()[0]
-    lpa_lookup_dict[hash_constraints(flpa2.get_constraints())] = flpa
+    lpa_lookup_dict[_hashConstraints(flpa2.getConstraints())] = flpa
 
     flpa3 = copy.deepcopy(flpa)
     flpa3.makeNodeImpassable(
-        flpa3.state_factory.make_or_get_state_by_pos((1, 1, 1)))
+        flpa3.state_factory.makeOrGetStateByPos((1, 1, 1)))
 
     assert flpa3 in lpa_lookup_dict
     flpa4 = lpa_lookup_dict[flpa3]
@@ -228,7 +228,7 @@ def test3():
     for state in flpa2.getShortestPath()[0]:
         print state.pos
 
-def hash_constraints(constraints):
+def _hashConstraints(constraints):
     nodes = (node.pos for node in sorted(constraints[0]))
     edges = ((edge[0].pos, edge[1].pos) for edge in sorted(constraints[1]))
     return hash((nodes, edges))
