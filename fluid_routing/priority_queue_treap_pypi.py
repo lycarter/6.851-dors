@@ -3,7 +3,7 @@
 import treap
 
 
-class queue():
+class Queue():
     """Shim for treap to make it look like Queue.
 
     Note: This can be copy.deepcopy'd correctly."""

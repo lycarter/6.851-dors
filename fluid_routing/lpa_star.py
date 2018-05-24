@@ -109,7 +109,7 @@ class LPA():
         """
 
         # U is a priority queue of inconsistent nodes (g != rhs)
-        self._U = pq.queue()
+        self._U = pq.Queue()
 
         # Warning that for these two dicts, the keys compare by position,
         # but the key isn't updated with the latest k value

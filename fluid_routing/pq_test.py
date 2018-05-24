@@ -44,8 +44,8 @@ class DummyItem():
 def generate_item():
 	return DummyItem(random.random())
 
-pqInst1 = pq1.queue()
-pqInst2 = pq2.queue()
+pqInst1 = pq1.Queue()
+pqInst2 = pq2.Queue()
 
 items = set([])
 

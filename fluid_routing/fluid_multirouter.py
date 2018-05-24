@@ -37,7 +37,7 @@ class FLPA_BFS(object):
 
             flpa_list.append(route_flpa)
 
-        self.flpa_queue = pq.queue()
+        self.flpa_queue = pq.Queue()
         self.flpa_queue.insert((-1,tuple(flpa_list)))
         self._flpa_cache = {}
 

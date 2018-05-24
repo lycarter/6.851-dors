@@ -3,7 +3,7 @@
 import heapq
 
 
-class queue():
+class Queue():
     """Shim for heapq to make it look like Queue.
 
     Note: This can be copy.deepcopy'd correctly."""
