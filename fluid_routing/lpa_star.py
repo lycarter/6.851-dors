@@ -1,6 +1,6 @@
 """LPA* implementation in Python."""
 
-import priority_queue as pq
+import priority_queue_sortedset as pq
 
 # c: cost
 # g*(s): dist from start to s
@@ -51,10 +51,16 @@ class state():
             else:
                 first = other.k[0] - self.k[0]
 
-            if other.k[1] == float("inf") and self.k[1] == float("inf"):
-                second = 0
-            else:
-                second = other.k[1] - self.k[1]
+            if first == 0:
+                if other.k[1] == float("inf") and self.k[1] == float("inf"):
+                    second = 0
+                else:
+                    second = other.k[1] - self.k[1]
+                if second == 0:
+                    if other.pos > self.pos:
+                        return 1
+                    else:
+                        return -1
 
             if first != 0:
                 return first
@@ -174,6 +180,15 @@ class LPA():
             self._rhs_dict[u] = min([self._g(s) + self._c(s, u) for s in u.pred()])
         if u in self._U:
             self._U.remove(u)
+            # print u in self._U
+            # try:
+            #     self._U.remove(u)
+            # except Exception, e:
+            #     print u
+            #     print u in self._U
+            #     print "\n".join([str(i) for i in self._U._set])
+            #     raise e
+            # print("but now i removed it")
         if self._g(u) != self._rhs(u):
             u.k = self._calculateKey(u)
             self._U.insert(u)

@@ -1,5 +1,5 @@
 import priority_queue as pq1
-import priority_queue_treap_pypi as pq2
+import priority_queue_sortedset as pq2
 import random
 
 class DummyItem():

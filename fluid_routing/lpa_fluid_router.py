@@ -55,7 +55,7 @@ class FluidLPA(lpa_star.LPA):
         return self._c(s, s_goal)
 
     def _c(self, s, s2):
-        if s in self._impassable_nodes or s2 in self._impassable_nodes:
+        if s.pos in self._impassable_nodes or s2.pos in self._impassable_nodes:
             return float("inf")
         if (s, s2) in self._impassable_edges or (s2, s) in self._impassable_edges:
             return float("inf")
@@ -64,7 +64,7 @@ class FluidLPA(lpa_star.LPA):
         return sum([(p_1[i] - p_2[i])**2 for i in range(3)])**0.5
 
     def make_node_impassable(self, impassable_node):
-        self._impassable_nodes.add(impassable_node)
+        self._impassable_nodes.add(impassable_node.pos)
         for node in impassable_node.pred():
             self._updateVertex(node)
 
@@ -172,5 +172,5 @@ def test2():
     assert cost == float("inf")
 
 if __name__ == '__main__':
-    test2()
+    test()
     # test()

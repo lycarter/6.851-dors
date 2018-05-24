@@ -5,7 +5,7 @@ import numpy as np
 import lpa_fluid_router as flpa
 import random
 import lpa_math
-import priority_queue as pq
+import priority_queue_sortedset as pq
 
 class FLPA_BFS(object):
     """BFS Python implementation."""
@@ -124,7 +124,7 @@ class FLPA_BFS(object):
         if self.debug: print "actually returning something"
         return (paths, total_flpa_cost)
 
-    def _split_flpa_edge(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
+    def _split_flpa_edge_old(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
                          edge_2, cost):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
@@ -139,12 +139,12 @@ class FLPA_BFS(object):
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _split_flpa_edge_new(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
+    def _split_flpa_edge(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
                          edge_2, cost):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
-        left_flpa_list = list(copy.deepcopy(flpa_list))
-        right_flpa_list = list(copy.deepcopy(flpa_list))
+        left_flpa_list = list(copy.copy(flpa_list))
+        right_flpa_list = list(copy.copy(flpa_list))
 
         left_flpa_list = self._split_single_edge(left_flpa_list, flpa_index_1, edge_1)
         right_flpa_list = self._split_single_edge(right_flpa_list, flpa_index_2, edge_2)
@@ -167,7 +167,7 @@ class FLPA_BFS(object):
 
         return tuple(flpa_list)
 
-    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_pos,
+    def _split_flpa_pos_old(self, flpa_list, flpa_index_1, flpa_index_2, bad_pos,
                         cost):
         """Splits two routes at bad_pos and appends the new search objects to
         the flpa_queue."""
@@ -189,30 +189,30 @@ class FLPA_BFS(object):
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _split_flpa_pos_new(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
+    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_pos,
                         cost):
         """Splits two routes at bad_pos and appends the new search objects to
         the flpa_queue."""
 
-        left_flpa_list = list(copy.deepcopy(flpa_list))
-        right_flpa_list = list(copy.deepcopy(flpa_list))
+        left_flpa_list = list(copy.copy(flpa_list))
+        right_flpa_list = list(copy.copy(flpa_list))
 
-        left_flpa_list = self._split_single_pos(left_flpa_list, flpa_index_1, bad_node)
-        right_flpa_list = self._split_single_pos(right_flpa_list, flpa_index_2, bad_node)
+        left_flpa_list = self._split_single_pos(left_flpa_list, flpa_index_1, bad_pos)
+        right_flpa_list = self._split_single_pos(right_flpa_list, flpa_index_2, bad_pos)
         self._queue_insert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _split_single_pos(self, flpa_list, flpa_index, node):
+    def _split_single_pos(self, flpa_list, flpa_index, pos):
         flpa_constraints = flpa_list[flpa_index].get_constraints() # (node, edge)
-        flpa_constraints[0].add(node)
+        flpa_constraints[0].add(pos)
         hashable_flpa_constraints = (tuple(i) for i in flpa_constraints)
-        flpa_constraints[0].remove(node)
+        flpa_constraints[0].remove(pos)
         if hashable_flpa_constraints in self._flpa_cache:
             print("\t\t\t\t\t\t\t\tthe queue did something!")
             new_flpa = copy.deepcopy(self._flpa_cache[hashable_flpa_constraints])
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
-            new_flpa.make_node_impassable(new_flpa.state_factory.make_or_get_state_by_pos(node.pos))
+            new_flpa.make_node_impassable(new_flpa.state_factory.make_or_get_state_by_pos(pos))
             self._flpa_cache[hashable_flpa_constraints] = new_flpa
         flpa_list[flpa_index] = new_flpa
 
