@@ -62,7 +62,7 @@ class FLPA_BFS(object):
                 if self.debug:
                     print "node overlap conflict at %s" % (node.pos,)
                 self._split_flpa_pos(flpa_list, flpa_index_1, flpa_index_2,
-                                     node, flpa_cost)
+                                     node.pos, flpa_cost)
                 return False
 
         # check edge collisions
@@ -124,13 +124,27 @@ class FLPA_BFS(object):
         if self.debug: print "actually returning something"
         return (paths, total_flpa_cost)
 
-
     def _split_flpa_edge(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
                          edge_2, cost):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
-        left_flpa_list = list(copy.copy(flpa_list))
-        right_flpa_list = list(flpa_list)
+
+        # split left
+        left_flpa_list = copy.deepcopy(flpa_list)
+        left_flpa_list[flpa_index_1].make_edge_impassable(edge_1)
+        
+        right_flpa_list = copy.deepcopy(flpa_list)
+        right_flpa_list[flpa_index_2].make_edge_impassable(edge_2)
+
+        self._queue_insert(left_flpa_list, right_flpa_list, cost)
+
+
+    def _split_flpa_edge_new(self, flpa_list, flpa_index_1, flpa_index_2, edge_1,
+                         edge_2, cost):
+        """Splits two routes at edge_1 and edge_2 respectively and appends the
+        new search objects to the flpa_queue."""
+        left_flpa_list = list(copy.deepcopy(flpa_list))
+        right_flpa_list = list(copy.deepcopy(flpa_list))
 
         left_flpa_list = self._split_single_edge(left_flpa_list, flpa_index_1, edge_1)
         right_flpa_list = self._split_single_edge(right_flpa_list, flpa_index_2, edge_2)
@@ -153,14 +167,35 @@ class FLPA_BFS(object):
 
         return tuple(flpa_list)
 
-
-    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
+    def _split_flpa_pos(self, flpa_list, flpa_index_1, flpa_index_2, bad_pos,
                         cost):
         """Splits two routes at bad_pos and appends the new search objects to
         the flpa_queue."""
 
-        left_flpa_list = list(copy.copy(flpa_list))
-        right_flpa_list = list(flpa_list)
+        print bad_pos
+
+        # split left
+        left_flpa_list = copy.deepcopy(flpa_list)
+        tmp_flpa = left_flpa_list[flpa_index_1]
+        tmp_flpa.make_node_impassable(
+            tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
+
+        # split right
+        right_flpa_list = copy.deepcopy(flpa_list)
+        tmp_flpa = right_flpa_list[flpa_index_2]
+        tmp_flpa.make_node_impassable(
+            tmp_flpa.state_factory.make_or_get_state_by_pos(bad_pos))
+
+        self._queue_insert(left_flpa_list, right_flpa_list, cost)
+
+
+    def _split_flpa_pos_new(self, flpa_list, flpa_index_1, flpa_index_2, bad_node,
+                        cost):
+        """Splits two routes at bad_pos and appends the new search objects to
+        the flpa_queue."""
+
+        left_flpa_list = list(copy.deepcopy(flpa_list))
+        right_flpa_list = list(copy.deepcopy(flpa_list))
 
         left_flpa_list = self._split_single_pos(left_flpa_list, flpa_index_1, bad_node)
         right_flpa_list = self._split_single_pos(right_flpa_list, flpa_index_2, bad_node)
