@@ -9,8 +9,12 @@ class queue():
     Note: This can be copy.deepcopy'd correctly."""
     def __init__(self):
         self._treap = treap.treap()
+        self._counter = 0
+        self.time_lookup = {}
 
     def insert(self, item):
+        self.time_lookup[item] = self._counter
+        self._counter += 1
         self._treap[item] = 1
 
     def top(self):
@@ -48,3 +52,10 @@ class queue():
 
     def printQueue(self):
         print(self._treap)
+
+    def __str__(self):
+        toReturn = "note: this destroys the queue\n\n"
+        while len(self._treap) > 0:
+            u = self.pop()
+            toReturn += "(%s) %s\n" % (self.time_lookup[u], str(u))
+        return toReturn
