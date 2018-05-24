@@ -131,7 +131,7 @@ def fluid_is_valid_2(pos):
     return min(pos) >= 0 and pos[0] <= 2 and pos[1] < 1 and pos[2] < 1
 
 
-def test():
+def test1():
     """Tests the fluid routing. Also a helpful example of usage."""
     state_lookup_dict = {}
     fluid_state_factory = StateFactory(NodeState, state_lookup_dict,
@@ -185,6 +185,55 @@ def test2():
     assert path is None
     assert cost == float("inf")
 
+def test3():
+    """Tests the fluid routing. Also a helpful example of usage."""
+    lpa_lookup_dict = {}
+    state_lookup_dict = {}
+    fluid_state_factory = StateFactory(NodeState, state_lookup_dict,
+                                       fluid_is_valid, debug=False)
+
+    s_start = fluid_state_factory.make_or_get_state_by_pos((0, 0, 0))
+    s_goal = fluid_state_factory.make_or_get_state_by_pos((2, 2, 2))
+
+    flpa = FluidLPA(s_start, s_goal, fluid_state_factory, state_lookup_dict)
+
+    flpa.computeShortestPath()
+    (path1, cost) = flpa.getShortestPath()
+    lpa_lookup_dict[hash_constraints(flpa.get_constraints())] = flpa
+
+    flpa2 = copy.deepcopy(flpa)
+    flpa2.make_node_impassable(
+        flpa2.state_factory.make_or_get_state_by_pos((1, 1, 1)))
+
+    flpa2.computeShortestPath()
+    assert path1 != flpa2.getShortestPath()[0]
+    lpa_lookup_dict[hash_constraints(flpa2.get_constraints())] = flpa
+
+    flpa3 = copy.deepcopy(flpa)
+    flpa3.make_node_impassable(
+        flpa3.state_factory.make_or_get_state_by_pos((1, 1, 1)))
+
+    assert flpa3 in lpa_lookup_dict
+    flpa4 = lpa_lookup_dict[flpa3]
+    assert flpa2 == flpa4
+
+    flpa.computeShortestPath()
+    assert path1 == flpa.getShortestPath()[0]
+
+    for state in flpa.getShortestPath()[0]:
+        print state.pos
+
+    print ""
+
+    for state in flpa2.getShortestPath()[0]:
+        print state.pos
+
+def hash_constraints(constraints):
+    nodes = (node.pos for node in sorted(constraints[0]))
+    edges = ((edge[0].pos, edge[1].pos) for edge in sorted(constraints[1]))
+    return hash((nodes, edges))
+
 if __name__ == '__main__':
-    test2()
+    test1()
     # test()
+
