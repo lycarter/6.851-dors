@@ -175,17 +175,17 @@ class FLPA_BFS(object):
         self._queueInsert(left_flpa_list, right_flpa_list, cost)
 
 
-    def _splitSinglePos(self, flpa_list, flpa_index, node):
+    def _splitSinglePos(self, flpa_list, flpa_index, bad_node):
         flpa_constraints = flpa_list[flpa_index].getConstraints() # (node, edge)
-        flpa_constraints[0].add(node)
+        flpa_constraints[0].add(bad_node)
         h = self._hashConstraints(flpa_constraints)
-        flpa_constraints[0].remove(node)
+        flpa_constraints[0].remove(bad_node)
         if h in self._flpa_cache:
             print("\n\n\n\t\t\t\t\tthe queue did something!\n\n\n\n")
             new_flpa = copy.deepcopy(self._flpa_cache[h])
         else:
             new_flpa = copy.deepcopy(flpa_list[flpa_index])
-            new_flpa.makeNodeImpassable(new_flpa.state_factory.makeOrGetStateByPos(node.pos))
+            new_flpa.makeNodeImpassable(new_flpa.state_factory.makeOrGetStateByPos(bad_node.pos))
             self._flpa_cache[h] = new_flpa
         print("hashtable is %s large" % (len(self._flpa_cache),))
         flpa_list[flpa_index] = new_flpa
