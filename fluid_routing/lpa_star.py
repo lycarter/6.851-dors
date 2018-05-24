@@ -1,5 +1,6 @@
 """LPA* implementation in Python."""
 
+
 import priority_queue_sortedset as pq
 
 # c: cost
@@ -13,6 +14,9 @@ import priority_queue_sortedset as pq
 
 # overconsistent: g(s) > rhs(s)  --> set g(s) = rhs(s)
 # underconsistent: g(s) < rhs(s) --> set g(s) = inf
+
+class PathTooLongException(Exception):
+    pass
 
 class state():
     """An arbitrary-dimension state for LPA*"""
@@ -238,6 +242,8 @@ class LPA():
             sNext = None
             for sPredPos in sCur.pred():
                 sPred = self.state_factory.make_or_get_state_by_pos(sPredPos)
+                if sPred in path:
+                    continue
                 tmpCost = self._g(sPred) + self._c(sPred, sCur)
                 if self.debug: print("\tgot a min cost of %s with a tmp cost of %s"
                     % (minCost, tmpCost))
@@ -250,6 +256,10 @@ class LPA():
                 return (None, float("inf"))
             sCur = sNext
             path.append(sCur)
+            if len(path) > 20:
+                for item in path:
+                    print item.pos
+                raise PathTooLongException
             totalCost += moveCost
 
         if self.debug: print totalCost
@@ -277,11 +287,11 @@ class LPA():
 
     # def __eq__(self, other):
     #     if isinstance(self, other.__class__):
-    #         return self._impassable_edges == other._impassable_edges && self._impassable_nodes == other._impassable_nodes
+    #         return self._impassable_edges == other._impassable_edges and self._impassable_nodes == other._impassable_nodes
+
     #     else:
     #         return NotImplemented
     # def __ne__(self, other):
     #     return not self.__eq__(other)
-
     # def __hash__(self):
     #     return hash((tuple(self._impassable_nodes), tuple(self._impassable_edges)))

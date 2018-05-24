@@ -10,9 +10,13 @@ class queue():
     def __init__(self):
         self._U = []
         self._set = set([])
+        self._counter = 0
+        self.time_lookup = {}
 
     def insert(self, item):
         heapq.heappush(self._U, item)
+        self.time_lookup[item] = self._counter
+        self._counter += 1
         self._set.add(item)
 
     def top(self):
@@ -33,9 +37,6 @@ class queue():
 
     def pop(self):
         item = heapq.heappop(self._U)
-        if item not in self._set:
-            print(item.k)
-            print ', '.join([str(i.k) for i in self._set])
         self._set.remove(item)
         return item
 
@@ -56,3 +57,10 @@ class queue():
     def printQueue(self):
         for u in self._U:
             print u
+
+    def __str__(self):
+        toReturn = "note: this destroys the queue\n\n"
+        while len(self._U) > 0:
+            u = self.pop()
+            toReturn += "(%s) %s\n" % (self.time_lookup[u], str(u))
+        return toReturn
