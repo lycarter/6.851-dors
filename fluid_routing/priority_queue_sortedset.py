@@ -4,7 +4,7 @@ import sortedcontainers
 import copy
 
 class Queue():
-    """Shim for treap to make it look like Queue.
+    """Treap augmented with hashtable.
 
     Note: This can be copy.deepcopy'd correctly."""
     def __init__(self):
@@ -36,20 +36,8 @@ class Queue():
             item = None
         return item
 
-    # def remove(self, item):
-    #     print("called from elsewhere")
-    #     self._treap.remove(item)
-
     def remove(self, item):
-        self._set.discard(item)
-        try:
-            self._set.discard(item)
-        except Exception, e:
-            print item
-            print("discarding???")
-            print item in self._set
-            print "\n".join([str(i) for i in self._set])
-            raise e
+        self._set.remove(item)
 
     def __contains__(self, key):
         return key in self._set

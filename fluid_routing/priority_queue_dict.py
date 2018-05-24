@@ -1,18 +1,15 @@
 """Implements a priority queue for LPA*"""
 
-import heapq
-
 
 class Queue():
-    """Shim for heapq to make it look like Queue.
+    """Linked list augmented with hashtable.
 
     Note: This can be copy.deepcopy'd correctly."""
     def __init__(self):
         self._U = {}
         self._list_U = None
 
-    def insert(self, item): # ncalls = 172885
-        # print("insert called with %s" % item.k)
+    def insert(self, item):
         listItem = LinkedList(item)
         if self._list_U == None:
             self._list_U = listItem
@@ -21,15 +18,14 @@ class Queue():
             if self._list_U.prev:
                 self._list_U = self._list_U.prev
         self._U[item] = listItem
-        # print "on insert " + str(self._list_U)
 
-    def top(self): # ncalls = 17934
+    def top(self):
         if self._list_U:
             return self._list_U.val
         else:
             return None
 
-    def topKey(self): # ncalls = 17934
+    def topKey(self):
         t = self.top()
         if type(t) == tuple:
             return t
@@ -39,17 +35,14 @@ class Queue():
             else:
                 return t.k
 
-    def pop(self): # ncalls = 169390
+    def pop(self):
         topListItem = self._list_U
         self._list_U = topListItem.next
         item = topListItem.pop()
-        # print self._list_U
         del self._U[item]
         return item
 
-    def remove(self, item): # ncalls = 154753
-        # Note that this is a linear-time operation. Reimplementing as a treap would
-        # reduce this to logarithmic time without any further penalties.
+    def remove(self, item):
         listItem = self._U[item]
         if listItem == self._list_U:
             self._list_U = self._list_U.next
@@ -57,10 +50,10 @@ class Queue():
         del self._U[item]
 
 
-    def __contains__(self, key): # ncalls = 312168
+    def __contains__(self, key):
         return key in self._U
 
-    def __len__(self): # ncalls = 568
+    def __len__(self):
         return len(self._U)
 
     def printQueue(self):

@@ -1,10 +1,8 @@
 """Implements a priority queue for LPA*"""
 
-import heapq
-
 
 class Queue():
-    """Shim for heapq to make it look like Queue.
+    """Array augmented with hashtable.
 
     Note: This can be copy.deepcopy'd correctly."""
     def __init__(self):
@@ -34,16 +32,13 @@ class Queue():
 
     def pop(self):
         item = self._U.pop(0)
-        self._U.sort
+        self._U.sort()
         self._set.remove(item)
         return item
 
     def remove(self, item):
-        # Note that this is a linear-time operation. Reimplementing as a treap would
-        # reduce this to logarithmic time without any further penalties.
         self._set.remove(item)
         self._U.remove(item)
-        self._U.sort()
 
 
     def __contains__(self, key):
