@@ -96,7 +96,7 @@ class FLPA_BFS(object):
         for route_flpa in flpa_list:
             if self.debug:
                 print "Solving new FLPA: from %s to %s" % (route_flpa.sStart, route_flpa.sGoal)
-                # route_flpa.printConstraints()
+                route_flpa.printConstraints()
             route_flpa.computeShortestPath()
             if self.debug: print "computed shortest path"
             (tmp_path, cost) = route_flpa.getShortestPath()
@@ -134,11 +134,9 @@ class FLPA_BFS(object):
         """Splits two routes at edge_1 and edge_2 respectively and appends the
         new search objects to the flpa_queue."""
         left_flpa_list = list(flpa_list)
-        # second_flpa_list = list(copy.deepcopy(flpa_list))
         right_flpa_list = list(flpa_list)
 
         left_flpa_list = self._splitSingleEdge(left_flpa_list, flpa_index_1, edge_1)
-        # second_flpa_list = self._splitSingleEdge(second_flpa_list, flpa_index_1, edge_1)
         right_flpa_list = self._splitSingleEdge(right_flpa_list, flpa_index_2, edge_2)
         self._queueInsert(left_flpa_list, right_flpa_list, cost)
 
@@ -203,18 +201,12 @@ class FLPA_BFS(object):
     def _hashConstraints(constraints):
         nodes = (node.pos for node in sorted(constraints[0]))
         edges = ((edge[0].pos, edge[1].pos) for edge in sorted(constraints[1]))
-        # print((tuple(nodes), tuple(edges)))
         toReturn = hash((tuple(nodes), tuple(edges)))
         return toReturn
 
     def _queueInsert(self, flpa_list_1, flpa_list_2, flpa_cost):
-        """Inserts l1 and l2 into the priority queue with appropriate cost.
+        """Inserts into the priority queue with appropriate cost.
         """
-
-        # if len(self.flpa_queue) >= 4:
-        #     print self.flpa_queue
-        #     raise Exception
-
         self.flpa_queue.insert((flpa_cost, tuple(flpa_list_1)))
         self.flpa_queue.insert((flpa_cost, tuple(flpa_list_2)))
 
@@ -281,9 +273,5 @@ def test_2():
 
 
 if __name__ == '__main__':
-    # test_1()
-    # test_1() w/ debug: 0.354/0.292/0.172
-    # test_1() wo debug: 0.235/0.232/0.132
+    test_1()
     test_2()
-    # test_2() w/ debug: 54.809/51.032/3.948
-    # test_2() wo debug: 47.387/47.064/0.496
