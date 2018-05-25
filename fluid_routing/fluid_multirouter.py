@@ -10,7 +10,7 @@ import priority_queue as pq
 
 random.seed(1)
 
-class FLPA_BFS(object):
+class MPA(object):
     """BFS Python implementation."""
     def __init__(self, desired_routes, valid_region_func, debug=False):
         """Args:
@@ -237,7 +237,7 @@ def test_1():
     def fluid_is_valid(pos):
         return max(pos) <= 2 and min(pos) >= 0
 
-    bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=True)
+    bfs_obj = MPA(routes, fluid_is_valid, debug=True)
 
     (paths, cost) = bfs_obj.findSolution()
     print "\n\n\n"
@@ -263,7 +263,7 @@ def test_2():
     def fluid_is_valid(pos):
         return max(pos) <= 10 and min(pos) >= 0
 
-    bfs_obj = FLPA_BFS(routes, fluid_is_valid, debug=False)
+    bfs_obj = MPA(routes, fluid_is_valid, debug=False)
     (paths, cost) = bfs_obj.findSolution()
     print "\n\n\n"
     for path in paths:
