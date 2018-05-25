@@ -39,14 +39,8 @@ class NodeState(lpa_star.State):
         result = NodeState(self.pos[:], self.k[:])
         memo[id(self)] = result
         result.setNodeLookupDict(copy.deepcopy(self.lookup_dict, memo))
-
-        # This does not have to be deepcopy'd, because the same region is
-        # still valid for all copied objects. Only the cost function is updated
-        # when setting a node as inadmissable
         result.setValidPosLookupFunc(self.is_valid_pos_f)
 
-        # this line below is the issue. NodeState's that are related to each other should keep the same state_factory
-        # result.set_state_factory(copy.deepcopy(self.state_factory, memo))
         return result
 
 
@@ -88,11 +82,6 @@ class StateFactory(object):
         self.debug = debug
 
     def makeOrGetStateByPos(self, pos):
-        # if pos == (1,4,1):
-        #     self.debug = True
-        #     print("i am %s" % (self,))
-        # else:
-        #     self.debug = False
         """Looks up a position in the dictionary, returns the state if the pos
         exists in the dictionary. Creates the state and adds it to the dict
         if it does not already exist, then returns it."""
