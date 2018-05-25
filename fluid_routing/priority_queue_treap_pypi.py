@@ -6,7 +6,8 @@ import treap
 class Queue():
     """Treap augmented with hashtable.
 
-    Note: This can be copy.deepcopy'd correctly."""
+    Note: This can be copy.copy'd correctly.
+    It mostly works, but Cython extensions get unhappy."""
     def __init__(self):
         self._treap = treap.treap()
 
