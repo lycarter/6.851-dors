@@ -105,10 +105,7 @@ class StateFactory(object):
             return None
 
     def updateState(self, new_state):
-        # print("i am %s" % (self,))
-        # print("updating state %s" % (new_state,))
         self.node_lookup_dict[new_state] = new_state
-        # print("it's now %s" % (self.node_lookup_dict[new_state],))
 
 
 def fluid_is_valid(pos):
@@ -224,5 +221,6 @@ def _hashConstraints(constraints):
 
 if __name__ == '__main__':
     test1()
-    # test()
+    test2()
+    test3()
 
