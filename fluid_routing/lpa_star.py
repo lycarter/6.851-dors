@@ -176,35 +176,18 @@ class LPA():
         pass
 
     def _updateVertex(self, u):
-        debug = False
-        # if u.pos == (1, 4, 1):
-        #     debug = True
-        #     print('\n\n\n\ninserting %s' % (u,))
-        #     print("i am %s" % self)
         if u != self.sStart:
             # Update the estimate with lowest cost from predecessors
             preds = [self.state_factory.makeOrGetStateByPos(pos) for pos in u.pred()]
             self._rhs_dict[u] = min([self._g(s) + self._c(s, u) for s in preds])
         if u in self._U:
-            if debug:
-                print("attempting to remove it")
             self._U.remove(u)
-            if debug:
-                print("after remove")
-                print("\n".join([str(i) for i in sorted(self._U._set)]))
                 
         if self._g(u) != self._rhs(u):
-            if debug:
-                print("inserting it")
             u.k = self._calculateKey(u)
             self._U.insert(u)
-            if debug:
-                print("actually inserting %s" % (u,))
             self.stateDict[u] = u
             self.state_factory.updateState(u)
-            if debug:
-                print("after insert")
-                print("\n".join([str(i) for i in sorted(self._U._set)]))
 
 
     def computeShortestPath(self):
@@ -219,19 +202,17 @@ class LPA():
                 for pos in u.succ():
                     s = self.state_factory.makeOrGetStateByPos(pos)
                     if self.debug: print "updating %s" % (s.pos,)
-                    # print s
                     self._updateVertex(s)
                     if self.debug: self._printGRHS()
             else:
                 self._g_dict[u] = float("inf")
-                # self._updateVertex(u)
                 for pos in u.succ():
                     s = self.state_factory.makeOrGetStateByPos(pos)
                     self._updateVertex(s)
 
     def getShortestPath(self):
         # Make sure to only run this after computeShortestPath
-        if self.debug: print "\tgeting shortest path"
+        if self.debug: print "\tgetting shortest path"
         sCur = self.sGoal
         path = [sCur]
         totalCost = 0
