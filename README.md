@@ -16,6 +16,7 @@ Input new coordinates by modifying `fluid_multirouter.py` or by importing it and
 
 ## View profiling results
 Note that existing profiling results were taken in an Ubuntu VM on a system running a 4.0GHz i7 4790k. Discrepancies will exist for other setups.
+
 ```snakeviz results.prof```
 
 See the writeup: lycarter.com/2018-06-02/meng-thesis
