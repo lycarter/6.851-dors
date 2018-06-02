@@ -19,4 +19,4 @@ Note that existing profiling results were taken in an Ubuntu VM on a system runn
 
 ```snakeviz results.prof```
 
-See the writeup: lycarter.com/2018-06-02/meng-thesis
+See the [writeup](http://lycarter.com/2018-06-02/meng-thesis) on my website.
